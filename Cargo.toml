@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "src/zapier-automation-backend"
+]
+resolver = "2"

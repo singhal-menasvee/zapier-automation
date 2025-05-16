@@ -1,0 +1,27 @@
+{
+  "canisters": {
+    "zapier-automation-backend": {
+      "candid": "src/zapier-automation-backend/zapier-automation-backend.did",
+      "package": "zapier-automation-backend",
+      "type": "rust"
+    },
+    "zapier-automation-frontend": {
+      "dependencies": [
+        "zapier-automation-backend"
+      ],
+      "source": [
+        "src/zapier-automation-frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "zapier-automation-frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
