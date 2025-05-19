@@ -1,29 +1,11 @@
-import { useState } from 'react';
-import { zapier_automation_backend } from 'declarations/zapier-automation-backend';
+import React from 'react';
+import WorkflowDashboard from './components/WorkflowDashboard';
+import './index.css'; // This already includes styling like Tailwind or custom SCSS
 
 function App() {
-  const [greeting, setGreeting] = useState('');
-
-  function handleSubmit(event) {
-    event.preventDefault();
-    const name = event.target.elements.name.value;
-    zapier_automation_backend.greet(name).then((greeting) => {
-      setGreeting(greeting);
-    });
-    return false;
-  }
-
   return (
-    <main>
-      <img src="/logo2.svg" alt="DFINITY logo" />
-      <br />
-      <br />
-      <form action="#" onSubmit={handleSubmit}>
-        <label htmlFor="name">Enter your name: &nbsp;</label>
-        <input id="name" alt="Name" type="text" />
-        <button type="submit">Click Me!</button>
-      </form>
-      <section id="greeting">{greeting}</section>
+    <main className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-black">
+      <WorkflowDashboard />
     </main>
   );
 }
