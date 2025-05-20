@@ -1,15 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { zapier_automation_backend } from "../../../declarations/zapier-automation-backend/zapier-automation-backend.did";
+import { zapier_automation_backend } from "../../../declarations/zapier-automation-backend";
+
 
 const WorkflowDashboard = () => {
   const [workflows, setWorkflows] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchWorkflows = async () => {
+  try {
     const data = await zapier_automation_backend.list_workflows();
+    console.log("Fetched workflows:", data); // Add this
     setWorkflows(data);
+  } catch (err) {
+    console.error("Failed to fetch workflows:", err);
+  } finally {
     setLoading(false);
-  };
+  }
+};
+
 
   const deleteWorkflow = async (id) => {
     await zapier_automation_backend.delete_workflow(id);
@@ -17,8 +25,36 @@ const WorkflowDashboard = () => {
   };
 
   useEffect(() => {
+  const init = async () => {
+    await zapier_automation_backend.create_workflow({
+      name: "Ping to site",
+      trigger: {
+        HttpRequest: {
+          url: "https://example.com",
+          method: "GET",
+        },
+      },
+      actions: [
+        {
+          NotifyUser: {
+            user_id: "abc",
+            message: "Hello",
+          },
+        },
+      ],
+      conditions: [
+        {
+          field: "ping",
+          operator: "eq",
+          value: "pong",
+        },
+      ],
+    });
     fetchWorkflows();
-  }, []);
+  };
+  init();
+}, []);
+
 
   if (loading) return <p className="text-center text-gray-500">Loading...</p>;
 
