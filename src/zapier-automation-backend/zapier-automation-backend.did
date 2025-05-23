@@ -1,3 +1,8 @@
+type WorkflowLog = record {
+  timestamp: nat64;
+  message: text;
+};
+
 service : {
   create_workflow : (record {
     name : text;
@@ -109,4 +114,7 @@ service : {
   update_workflow_status : (text, variant { Active; Paused; Disabled }) -> (variant { ok : null; err : text });
 
   delete_workflow : (text) -> (variant { ok : null; err : text });
+   // New logging methods
+  get_workflow_logs : (text) -> (vec WorkflowLog);
+  log_workflow_event : (text, text) -> ();
 }
