@@ -155,3 +155,37 @@ fn delete_workflow(id: String) -> Result<(), String> {
         }
     })
 }
+#[derive(CandidType, Deserialize, Clone, Debug)]
+pub struct WorkflowLog {
+    pub timestamp: u64,
+    pub message: String,
+}
+
+thread_local! {
+    static WORKFLOW_LOGS: RefCell<HashMap<String, Vec<WorkflowLog>>> = RefCell::new(HashMap::new());
+}
+
+#[ic_cdk::update]
+fn log_workflow_event(workflow_id: String, message: String) {
+    let log = WorkflowLog {
+        timestamp: ic_cdk::api::time(),
+        message,
+    };
+    
+    WORKFLOW_LOGS.with(|logs| {
+        logs.borrow_mut()
+            .entry(workflow_id)
+            .or_insert_with(Vec::new)
+            .push(log);
+    });
+}
+
+#[ic_cdk::query]
+fn get_workflow_logs(workflow_id: String) -> Vec<WorkflowLog> {
+    WORKFLOW_LOGS.with(|logs| {
+        logs.borrow()
+            .get(&workflow_id)
+            .cloned()
+            .unwrap_or_default()
+    })
+}
