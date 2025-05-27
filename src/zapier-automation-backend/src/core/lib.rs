@@ -2,7 +2,10 @@ use candid::{CandidType, Deserialize};
 use ic_cdk::caller;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::time::Duration;
+use ic_cdk::api::time;
 
+// Define Trigger Types
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub enum Trigger {
     ContractEvent {
@@ -19,6 +22,7 @@ pub enum Trigger {
     },
 }
 
+// Define Action Types
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub enum Action {
     SendHttpRequest {
@@ -37,6 +41,7 @@ pub enum Action {
     },
 }
 
+// Define Condition Structure
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct Condition {
     pub field: String,
@@ -44,6 +49,7 @@ pub struct Condition {
     pub value: String,
 }
 
+// Define Workflow Status
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub enum WorkflowStatus {
     Active,
@@ -51,6 +57,7 @@ pub enum WorkflowStatus {
     Disabled,
 }
 
+// Define Workflow Structure
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct Workflow {
     pub id: String,
@@ -64,6 +71,7 @@ pub struct Workflow {
     pub updated_at: u64,
 }
 
+// Define Input Structure for Creating Workflows
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct WorkflowInput {
     pub name: String,
@@ -72,22 +80,22 @@ pub struct WorkflowInput {
     pub conditions: Option<Vec<Condition>>,
 }
 
-// Use HashMap for better lookup performance
+// Store Workflows in a HashMap
 thread_local! {
     static WORKFLOW_STORE: RefCell<HashMap<String, Workflow>> = RefCell::new(HashMap::new());
 }
 
-// Helper function to generate a unique ID
+// Generate Unique Workflow ID
 fn generate_id() -> String {
-    use ic_cdk::api::time;
     format!("{}-{}", time(), caller().to_text())
 }
 
+// Create a New Workflow
 #[ic_cdk::update]
 fn create_workflow(input: WorkflowInput) -> String {
     let id = generate_id();
-    let now = ic_cdk::api::time();
-    
+    let now = time();
+
     let workflow = Workflow {
         id: id.clone(),
         name: input.name,
@@ -99,14 +107,15 @@ fn create_workflow(input: WorkflowInput) -> String {
         created_at: now,
         updated_at: now,
     };
-    
+
     WORKFLOW_STORE.with(|store| {
         store.borrow_mut().insert(id.clone(), workflow);
     });
-    
+
     id
 }
 
+// List All Workflows
 #[ic_cdk::query]
 fn list_workflows() -> Vec<Workflow> {
     WORKFLOW_STORE.with(|store| {
@@ -114,6 +123,7 @@ fn list_workflows() -> Vec<Workflow> {
     })
 }
 
+// Get a Specific Workflow by ID
 #[ic_cdk::query]
 fn get_workflow(id: String) -> Option<Workflow> {
     WORKFLOW_STORE.with(|store| {
@@ -121,17 +131,17 @@ fn get_workflow(id: String) -> Option<Workflow> {
     })
 }
 
+// Update Workflow Status
 #[ic_cdk::update]
 fn update_workflow_status(id: String, status: WorkflowStatus) -> Result<(), String> {
     WORKFLOW_STORE.with(|store| {
         let mut store = store.borrow_mut();
         if let Some(workflow) = store.get_mut(&id) {
-            // Check if caller is the owner
             if workflow.owner != caller().to_text() {
                 return Err("Not authorized".to_string());
             }
             workflow.status = status;
-            workflow.updated_at = ic_cdk::api::time();
+            workflow.updated_at = time();
             Ok(())
         } else {
             Err("Workflow not found".to_string())
@@ -139,12 +149,12 @@ fn update_workflow_status(id: String, status: WorkflowStatus) -> Result<(), Stri
     })
 }
 
+// Delete a Workflow
 #[ic_cdk::update]
 fn delete_workflow(id: String) -> Result<(), String> {
     WORKFLOW_STORE.with(|store| {
         let mut store = store.borrow_mut();
         if let Some(workflow) = store.get(&id) {
-            // Check if caller is the owner
             if workflow.owner != caller().to_text() {
                 return Err("Not authorized".to_string());
             }
@@ -155,23 +165,27 @@ fn delete_workflow(id: String) -> Result<(), String> {
         }
     })
 }
+
+// Define Workflow Logging Structure
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct WorkflowLog {
     pub timestamp: u64,
     pub message: String,
 }
 
+// Store Workflow Logs
 thread_local! {
     static WORKFLOW_LOGS: RefCell<HashMap<String, Vec<WorkflowLog>>> = RefCell::new(HashMap::new());
 }
 
+// Log Workflow Events
 #[ic_cdk::update]
 fn log_workflow_event(workflow_id: String, message: String) {
     let log = WorkflowLog {
-        timestamp: ic_cdk::api::time(),
+        timestamp: time(),
         message,
     };
-    
+
     WORKFLOW_LOGS.with(|logs| {
         logs.borrow_mut()
             .entry(workflow_id)
@@ -180,6 +194,7 @@ fn log_workflow_event(workflow_id: String, message: String) {
     });
 }
 
+// Retrieve Workflow Logs
 #[ic_cdk::query]
 fn get_workflow_logs(workflow_id: String) -> Vec<WorkflowLog> {
     WORKFLOW_LOGS.with(|logs| {
@@ -188,4 +203,73 @@ fn get_workflow_logs(workflow_id: String) -> Vec<WorkflowLog> {
             .cloned()
             .unwrap_or_default()
     })
+}
+
+// Execute Workflow Based on Triggers & Actions
+#[ic_cdk::update]
+fn execute_workflow(id: String) -> Result<(), String> {
+    WORKFLOW_STORE.with(|store| {
+        let mut store = store.borrow_mut();
+        if let Some(workflow) = store.get_mut(&id) {
+            ic_cdk::print(format!("Executing workflow: {}", workflow.name));
+
+            match &workflow.trigger {
+                Trigger::TimeBased { cron } => {
+                    ic_cdk::print(format!("Triggering workflow at schedule: {}", cron));
+                }
+                Trigger::HttpRequest { url, method } => {
+                    ic_cdk::print(format!("Triggering workflow via HTTP request: {} {}", method, url));
+                }
+                Trigger::ContractEvent { contract_address, event_name, poll_interval_sec } => {
+                    ic_cdk::print(format!(
+                        "Triggering workflow for contract {} event '{}' every {} seconds",
+                        contract_address, event_name, poll_interval_sec
+                    ));
+                }
+            }
+
+            for action in &workflow.actions {
+                match action {
+                    Action::NotifyUser { user_id, message } => {
+                        ic_cdk::print(format!("Sending notification to {}: {}", user_id, message));
+                    }
+                    Action::SendHttpRequest { url, method, body } => {
+                        ic_cdk::print(format!("Sending request to {} via {} with body {}", url, method, body));
+                    }
+                    Action::ExecuteContractMethod { contract_address, method, args } => {
+                        ic_cdk::print(format!(
+                            "Executing contract method '{}' on {} with args {:?}",
+                            method, contract_address, args
+                        ));
+                    }
+                }
+            }
+
+            log_workflow_event(id.clone(), format!("Workflow '{}' executed successfully", workflow.name));
+            Ok(())
+        } else {
+            Err("Workflow not found".to_string())
+        }
+    })
+}
+
+// Automatically Run Scheduled Workflows
+#[ic_cdk::update]
+fn run_scheduled_workflows() {
+    WORKFLOW_STORE.with(|store| {
+        let mut store = store.borrow_mut();
+
+        for (_, workflow) in store.iter_mut() {
+            if let Trigger::TimeBased { cron } = &workflow.trigger {
+                ic_cdk::print(format!("Checking scheduled workflow: {} at {}", workflow.name, cron));
+                execute_workflow(workflow.id.clone()).ok();
+            }
+        }
+    });
+}
+
+// Schedule periodic execution
+#[ic_cdk::init]
+fn schedule_recurring_execution() {
+    ic_cdk_timers::set_timer(Duration::from_secs(600), || run_scheduled_workflows());
 }
