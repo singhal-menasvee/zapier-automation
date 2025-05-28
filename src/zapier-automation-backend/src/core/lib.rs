@@ -39,6 +39,16 @@ pub enum Action {
         method: String,
         args: Vec<String>,
     },
+    MintNft {
+    to_principal: String,
+    metadata: String,
+},
+ UpdateCanisterState {
+        canister_id: String,
+        state_key: String,
+        state_value: String,
+    },
+
 }
 
 // Define Condition Structure
@@ -251,6 +261,11 @@ fn execute_workflow(id: String) -> Result<(), String> {
             Err("Workflow not found".to_string())
         }
     })
+    Action::MintNft { to_principal, metadata } => {
+    ic_cdk::print(format!("Minting NFT to {} with metadata: {}", to_principal, metadata));
+    // TODO: Call NFT canister mint method via inter-canister call
+}
+
 }
 
 // Automatically Run Scheduled Workflows
@@ -266,6 +281,15 @@ fn run_scheduled_workflows() {
             }
         }
     });
+    if let Trigger::ContractEvent { contract_address, event_name, poll_interval_sec } = &workflow.trigger {
+    // TODO: Integrate with ICP ledger or custom canister event stream
+    ic_cdk::print(format!(
+        "Polling event '{}' on {} every {}s",
+        event_name, contract_address, poll_interval_sec
+    ));
+    // Simulate match and call execute_workflow(workflow.id.clone());
+}
+
 }
 
 // Schedule periodic execution
