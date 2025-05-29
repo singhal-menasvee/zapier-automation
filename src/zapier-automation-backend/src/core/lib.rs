@@ -230,7 +230,11 @@ fn execute_workflow(id: String) -> Result<(), String> {
                 Trigger::HttpRequest { url, method } => {
                     ic_cdk::print(format!("Triggering workflow via HTTP request: {} {}", method, url));
                 }
-                Trigger::ContractEvent { contract_address, event_name, poll_interval_sec } => {
+                Trigger::ContractEvent {
+                    contract_address,
+                    event_name,
+                    poll_interval_sec,
+                } => {
                     ic_cdk::print(format!(
                         "Triggering workflow for contract {} event '{}' every {} seconds",
                         contract_address, event_name, poll_interval_sec
@@ -244,13 +248,41 @@ fn execute_workflow(id: String) -> Result<(), String> {
                         ic_cdk::print(format!("Sending notification to {}: {}", user_id, message));
                     }
                     Action::SendHttpRequest { url, method, body } => {
-                        ic_cdk::print(format!("Sending request to {} via {} with body {}", url, method, body));
+                        ic_cdk::print(format!(
+                            "Sending request to {} via {} with body {}",
+                            url, method, body
+                        ));
                     }
-                    Action::ExecuteContractMethod { contract_address, method, args } => {
+                    Action::ExecuteContractMethod {
+                        contract_address,
+                        method,
+                        args,
+                    } => {
                         ic_cdk::print(format!(
                             "Executing contract method '{}' on {} with args {:?}",
                             method, contract_address, args
                         ));
+                    }
+                    Action::MintNft {
+                        to_principal,
+                        metadata,
+                    } => {
+                        ic_cdk::print(format!(
+                            "Minting NFT to {} with metadata: {}",
+                            to_principal, metadata
+                        ));
+                        // TODO: Call NFT canister mint method via inter-canister call
+                    }
+                    Action::UpdateCanisterState {
+                        canister_id,
+                        state_key,
+                        state_value,
+                    } => {
+                        ic_cdk::print(format!(
+                            "Updating canister {} state: {} = {}",
+                            canister_id, state_key, state_value
+                        ));
+                        // TODO: Call method on target canister
                     }
                 }
             }
@@ -261,39 +293,47 @@ fn execute_workflow(id: String) -> Result<(), String> {
             Err("Workflow not found".to_string())
         }
     })
-    Action::MintNft { to_principal, metadata } => {
-    ic_cdk::print(format!("Minting NFT to {} with metadata: {}", to_principal, metadata));
-    // TODO: Call NFT canister mint method via inter-canister call
 }
 
-}
 
 // Automatically Run Scheduled Workflows
 #[ic_cdk::update]
 fn run_scheduled_workflows() {
     WORKFLOW_STORE.with(|store| {
-        let mut store = store.borrow_mut();
+        let store = store.borrow();
 
-        for (_, workflow) in store.iter_mut() {
+        for workflow in store.values() {
             if let Trigger::TimeBased { cron } = &workflow.trigger {
-                ic_cdk::print(format!("Checking scheduled workflow: {} at {}", workflow.name, cron));
-                execute_workflow(workflow.id.clone()).ok();
+                ic_cdk::print(format!(
+                    "Checking scheduled workflow: {} at {}",
+                    workflow.name, cron
+                ));
+                let id = workflow.id.clone();
+                // Trigger the workflow
+                execute_workflow(id).ok();
+            }
+
+            if let Trigger::ContractEvent {
+                contract_address,
+                event_name,
+                poll_interval_sec,
+            } = &workflow.trigger
+            {
+                ic_cdk::print(format!(
+                    "Polling event '{}' on {} every {}s",
+                    event_name, contract_address, poll_interval_sec
+                ));
+                // TODO: Poll external data source
             }
         }
     });
-    if let Trigger::ContractEvent { contract_address, event_name, poll_interval_sec } = &workflow.trigger {
-    // TODO: Integrate with ICP ledger or custom canister event stream
-    ic_cdk::print(format!(
-        "Polling event '{}' on {} every {}s",
-        event_name, contract_address, poll_interval_sec
-    ));
-    // Simulate match and call execute_workflow(workflow.id.clone());
 }
 
-}
 
 // Schedule periodic execution
 #[ic_cdk::init]
 fn schedule_recurring_execution() {
-    ic_cdk_timers::set_timer(Duration::from_secs(600), || run_scheduled_workflows());
+    ic_cdk_timers::set_timer_interval(Duration::from_secs(600), || {
+        run_scheduled_workflows();
+    });
 }

@@ -1,11 +1,20 @@
 {
-    "compilerOptions": {
-        "strict": true,
-        "target": "ES2020",
-        "experimentalDecorators": true,
-        "strictPropertyInitialization": false,
-        "moduleResolution": "node",
-        "allowJs": true,
-        "outDir": "HACK_BECAUSE_OF_ALLOW_JS"
-    }
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2020",
+    "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
+    "moduleResolution": "node",
+    "allowJs": true,
+    "outDir": "HACK_BECAUSE_OF_ALLOW_JS",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src"],   // ✅ Only include your app's source folder
+  "exclude": [
+    "node_modules",      // ✅ Always exclude this
+    "postcss.config.*",  // ✅ Exclude stale configs
+    "tailwind.config.*"
+  ]
 }

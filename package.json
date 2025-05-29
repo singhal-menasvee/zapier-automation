@@ -10,16 +10,12 @@
     "pretest": "npm run prebuild --workspaces --if-present",
     "start": "npm start --workspaces --if-present",
     "test": "npm test --workspaces --if-present"
-    
   },
   "type": "module",
   "workspaces": [
     "src/zapier-automation-frontend"
   ],
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.7",
-    "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.3",
-    "tailwindcss": "^4.1.7"
+    "@tailwindcss/postcss": "^4.1.8"
   }
 }
