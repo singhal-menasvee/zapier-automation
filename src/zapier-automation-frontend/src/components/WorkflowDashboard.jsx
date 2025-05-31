@@ -13,6 +13,7 @@ const WorkflowDashboard = () => {
   const [error, setError] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedWorkflow, setSelectedWorkflow] = useState(null);
+  const [templateToEdit, setTemplateToEdit] = useState(null); // Added state for template
 
   const fetchWorkflows = async () => {
     try {
@@ -28,14 +29,11 @@ const WorkflowDashboard = () => {
     }
   };
 
-  const handleCreateWorkflow = async (workflowData) => {
-    try {
-      await zapier_automation_backend.create_workflow(workflowData);
-      fetchWorkflows();
-    } catch (err) {
-      console.error("Failed to create workflow:", err);
-      setError("Failed to create workflow");
-    }
+  // Removed handleCreateWorkflow as it's now handled by CreateWorkflowForm's onSuccess path indirectly
+
+  const handleSelectTemplate = (template) => {
+    setTemplateToEdit(template);
+    setShowCreateForm(true);
   };
 
   const deleteWorkflow = async (id) => {
@@ -61,25 +59,49 @@ const WorkflowDashboard = () => {
   const getStatusText = (status) => Object.keys(status)[0];
 
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
-      const createTestWorkflow = async () => {
-        try {
-          await zapier_automation_backend.create_workflow({
-            name: "Test workflow",
-            trigger: { TimeBased: { cron: "* * * * *" } },
-            actions: [{ NotifyUser: { user_id: "abc123", message: "Ping matched!" } }],
-            conditions: [],
-          });
-        } catch (err) {
-          console.error("Failed to create test workflow:", err);
-        }
-      };
-      createTestWorkflow();
-    }
-    fetchWorkflows();
-  }, []);
+    const loadAndPotentiallyCreateTestWorkflow = async () => {
+      setLoading(true); // Set loading true at the beginning of the operation
+      setError(null); // Clear previous errors
 
-  if (loading) return <p className="text-center text-accent">Loading...</p>; // Changed text-blue-500 to text-accent
+      try {
+        const currentWorkflows = await zapier_automation_backend.list_workflows();
+        setWorkflows(currentWorkflows);
+
+        if (process.env.NODE_ENV === "development" && currentWorkflows.length === 0) {
+          console.log("No existing workflows found in dev mode, creating a test workflow.");
+          try {
+            await zapier_automation_backend.create_workflow({
+              name: "Test workflow (auto-generated)", // Updated name
+              trigger: { TimeBased: { cron: "* * * * *" } },
+              actions: [{ NotifyUser: { user_id: "abc123", message: "Ping matched!" } }],
+              conditions: [],
+            });
+            // Call fetchWorkflows again to update the list with the new test workflow
+            // This will also handle setLoading(false) internally if it succeeds or fails
+            await fetchWorkflows();
+            // Note: fetchWorkflows sets loading to true then false.
+            // We might get a flicker or multiple loading states.
+            // To avoid this, we could manually set workflows again and then setLoading(false) here.
+            // For now, keeping it simple by calling fetchWorkflows.
+          } catch (err) {
+            console.error("Failed to create test workflow:", err);
+            // Non-fatal for dev, so don't set global error. setLoading will be handled by finally.
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch workflows during initial load:", err);
+        setError("Failed to fetch workflows");
+      } finally {
+        // Ensure loading is set to false if fetchWorkflows wasn't called after test creation,
+        // or if the initial list_workflows failed.
+        setLoading(false);
+      }
+    };
+
+    loadAndPotentiallyCreateTestWorkflow();
+  }, []); // Runs once on mount
+
+  if (loading) return <p className="text-center text-accent">Loading...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>; // Kept specific error color
 
   return (
@@ -88,23 +110,41 @@ const WorkflowDashboard = () => {
       {/* Header */}
       ✅ Tailwind is working!
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-        {/* Changed text-red-800 to text-app-color */}
         <h1 className="text-4xl font-bold text-app-color mb-4 md:mb-0">Workflow Dashboard</h1>
-        <div className="flex items-center space-x-4">
-          {/* Replaced specific button classes with themed-button and kept utility classes for sizing/shape */}
+        {/* Old "+ Create Workflow" button removed. ThemeSwitcher remains. */}
+        <ThemeSwitcher />
+      </div>
+
+      {/* New Workflow Creation Options Section */}
+      <div className="mb-8 p-4 bg-card rounded-lg shadow">
+        <h2 className="text-xl font-semibold text-app-color mb-3">New Workflow</h2>
+        <div className="flex space-x-4">
           <button
-            onClick={() => setShowCreateForm(true)}
-            className="themed-button font-semibold px-5 py-2 rounded-2xl transition-all"
+            onClick={() => {
+              setShowCreateForm(false); // Hide form
+              setTemplateToEdit(null);  // Ensure no template is pre-selected for the form
+                                      // User will click a template from TemplateSection which calls handleSelectTemplate
+            }}
+            className="themed-button"
           >
-            + Create Workflow
+            Create from Template
           </button>
-          <ThemeSwitcher />
+          <button
+            onClick={() => {
+              setTemplateToEdit(null); // Ensure it's a custom workflow
+              setShowCreateForm(true);
+            }}
+            className="themed-button"
+          >
+            Create Custom Workflow
+          </button>
         </div>
       </div>
 
-      {/* Template Section */}
-      <div className="mb-10">
-        <TemplateSection onCreateWorkflow={handleCreateWorkflow} />
+      {/* Template Section - give it an ID if scrollIntoView is ever implemented */}
+      <div id="template-section" className="mb-10">
+        {/* Changed prop to onSelectTemplate and passed the new handler */}
+        <TemplateSection onSelectTemplate={handleSelectTemplate} />
       </div>
 
       {/* Create Workflow Form */}
@@ -113,9 +153,14 @@ const WorkflowDashboard = () => {
           <CreateWorkflowForm
             onSuccess={() => {
               setShowCreateForm(false);
-              fetchWorkflows();
+              setTemplateToEdit(null); // Clear template after use
+              fetchWorkflows(); // Keep fetching workflows on success
             }}
-            onCancel={() => setShowCreateForm(false)}
+            onCancel={() => {
+              setShowCreateForm(false);
+              setTemplateToEdit(null); // Clear template on cancel
+            }}
+            initialTemplate={templateToEdit} // Pass the selected template
           />
         </div>
       )}
@@ -140,19 +185,14 @@ const WorkflowDashboard = () => {
         {workflows.map((wf) => (
           <div
             key={wf.id}
-            // Changed bg-white to bg-card, border-gray-200 to border-themed (added 'border' class for width/style)
-            className="bg-card hover:shadow-xl transition-shadow rounded-2xl p-6 cursor-pointer border border-themed"
+            className="bg-card text-app-color hover:shadow-xl transition-shadow rounded-2xl p-6 border border-themed flex flex-col justify-between" // Restructured card classes
             onClick={() => setSelectedWorkflow(wf)}
           >
-            {/* Changed bg-white to bg-card (or could be removed if parent bg-card is sufficient) */}
-            <div className="bg-card shadow-md rounded-lg p-6 mb-4">
-              {/* Changed text-red-100 to text-app-color */}
-              <h2 className="text-xl font-semibold text-app-color">{wf.name}</h2>
-              {/* Changed text-gray-500 to text-app-color with opacity for secondary look */}
-              <p className="text-xs text-app-color opacity-75 mt-1 break-all">ID: {wf.id}</p>
-              <p className="text-sm mt-1">
+            <div> {/* Top content wrapper */}
+              <h2 className="text-xl font-semibold text-app-color mb-1">{wf.name}</h2>
+              <p className="text-xs text-app-color opacity-75 mt-1 mb-2 break-all">ID: {wf.id}</p>
+              <p className="text-sm mb-4">
                 Status:{" "}
-                {/* Kept status-specific colors */}
                 <span
                   className={
                     wf.status.Active
@@ -167,16 +207,17 @@ const WorkflowDashboard = () => {
               </p>
             </div>
 
-            <div className="mt-4">
+            <div className="my-4"> {/* Logs section with vertical margin */}
               <ErrorBoundary>
                 <WorkflowLogs workflowId={wf.id} />
               </ErrorBoundary>
             </div>
 
-            {/* Action Buttons - Kept specific colors for semantic meaning (delete, pause, resume) */}
-            <div className="mt-4 flex gap-2">
-              <button
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 text-sm rounded-lg"
+            {/* Action Buttons - Pushed to bottom, buttons aligned to the right */}
+            <div className="mt-auto pt-4 border-t border-themed">
+              <div className="flex gap-2 justify-end">
+                <button
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 text-sm rounded-lg"
                 onClick={(e) => {
                   e.stopPropagation();
                   deleteWorkflow(wf.id);
