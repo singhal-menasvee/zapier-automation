@@ -6,14 +6,14 @@ const TriggerTypeSelector = ({ type, onChange }) => {
           <input 
             type="text" 
             placeholder="* * * * * (cron)" 
-            className="bg-gray-700 text-white p-2 rounded"
+            className="themed-input" // Changed
           />
         );
       case 'HttpRequest':
         return (
           <div className="space-y-2">
-            <input type="text" placeholder="URL" className="bg-gray-700 text-white p-2 rounded w-full" />
-            <select className="bg-gray-700 text-white p-2 rounded">
+            <input type="text" placeholder="URL" className="themed-input w-full" /> {/* Changed */}
+            <select className="themed-input"> {/* Changed */}
               <option>GET</option>
               <option>POST</option>
             </select>
@@ -29,7 +29,7 @@ const TriggerTypeSelector = ({ type, onChange }) => {
       <select 
         value={type} 
         onChange={(e) => onChange(e.target.value)}
-        className="bg-gray-700 text-white p-2 rounded"
+        className="themed-input" // Changed
       >
         <option value="TimeBased">Schedule</option>
         <option value="HttpRequest">HTTP Request</option>

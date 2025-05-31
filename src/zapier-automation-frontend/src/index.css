@@ -2,3 +2,113 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --background-color: #ffffff;
+  --text-color: #2d3748; /* gray-800 */
+  --primary-bg: #edf2f7; /* gray-100 */
+  --secondary-bg: #f7fafc; /* gray-50 */
+  --accent-color: #6b46c1; /* purple-600 */
+  --accent-color-alpha: rgba(107, 70, 193, 0.3); /* Added */
+  --border-color: #e2e8f0; /* gray-300 */
+  --card-bg: #ffffff;
+  --button-bg: #6b46c1;
+  --button-text: #ffffff;
+  --button-hover-bg: #5a38a3; /* Added: Slightly darker purple */
+  --button-hover-text: #ffffff; /* Added */
+  --input-bg: #ffffff;
+  --input-text: #2d3748;
+  --input-border: #cbd5e0; /* gray-400 */
+  --input-focus-border: var(--accent-color); /* Added */
+  --link-color: #5a67d8; /* indigo-600 */
+  --link-hover-color: #434190; /* Added: Slightly darker indigo */
+  --icon-color: #4a5568; /* gray-600 */
+}
+
+.dark-theme {
+  --background-color: #1a202c; /* gray-900 */
+  --text-color: #e2e8f0; /* gray-200 */
+  --primary-bg: #2d3748; /* gray-800 */
+  --secondary-bg: #171923; /* gray-900, adjusted */
+  --accent-color: #9f7aea; /* purple-400 */
+  --accent-color-alpha: rgba(159, 122, 234, 0.4); /* Added */
+  --border-color: #4a5568; /* gray-600 */
+  --card-bg: #2d3748; /* gray-800 */
+  --button-bg: #9f7aea; /* purple-400 */
+  --button-text: #1a202c; /* gray-900 */
+  --button-hover-bg: #b995f7; /* Added: Slightly lighter purple */
+  --button-hover-text: #1a202c; /* Added */
+  --input-bg: #2d3748; /* gray-800 */
+  --input-text: #e2e8f0; /* gray-200 */
+  --input-border: #4a5568; /* gray-600 */
+  --input-focus-border: var(--accent-color); /* Added */
+  --link-color: #7f9cf5; /* indigo-400 */
+  --link-hover-color: #a5b4fc; /* Added: Slightly lighter indigo */
+  --icon-color: #a0aec0; /* gray-400 */
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  /* Transition for smooth theme changes */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Example of how to apply to a Tailwind component if needed,
+   though ideally components will use utilities that inherit or use these vars.
+   This is more for custom components or direct overrides. */
+.custom-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  /* ... other styles ... */
+}
+
+/* Added theme utility classes */
+.bg-app-background { background-color: var(--background-color); }
+.text-app-color { color: var(--text-color); }
+.bg-primary { background-color: var(--primary-bg); }
+.bg-secondary { background-color: var(--secondary-bg); }
+.text-accent { color: var(--accent-color); }
+.border-themed { border: 1px solid var(--border-color); } /* Updated for consistency */
+.bg-card { background-color: var(--card-bg); }
+/* .bg-button, .text-button, .bg-input, .text-input, .border-input are effectively replaced by .themed-button and .themed-input below */
+.text-link { color: var(--link-color); } /* Replaced by .themed-link */
+.icon-color { fill: var(--icon-color); } /* For SVGs */
+.stroke-icon-color { stroke: var(--icon-color); } /* For SVGs */
+
+.themed-link {
+  color: var(--link-color);
+  text-decoration: none; /* Or your preferred styling */
+  transition: color 0.2s ease-in-out; /* Add transition */
+}
+.themed-link:hover {
+  color: var(--link-hover-color);
+  text-decoration: underline;
+}
+
+.themed-button {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  padding: 0.5rem 1rem; /* Example padding */
+  border-radius: 0.25rem; /* Example border radius */
+  border: 1px solid transparent; /* Ensuring border consistency */
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; /* Add transition */
+}
+.themed-button:hover {
+  background-color: var(--button-hover-bg);
+  color: var(--button-hover-text);
+}
+
+.themed-input {
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid var(--input-border);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Add transition for box-shadow */
+}
+.themed-input:focus {
+  outline: none; /* Remove default browser outline */
+  border-color: var(--input-focus-border);
+  box-shadow: 0 0 0 2px var(--accent-color-alpha); /* Optional: add a subtle focus ring */
+}
