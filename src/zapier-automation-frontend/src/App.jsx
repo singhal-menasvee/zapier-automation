@@ -1,12 +1,20 @@
 import React from 'react';
-import WorkflowDashboard from './components/WorkflowDashboard';
-import './index.css'; // This already includes styling like Tailwind or custom SCSS
+import Header from './components/Header/Header';
+import HeroSection from './components/HeroSection/HeroSection';
+import Features from './components/Features/Features';
+import Footer from './components/Footer/Footer';
+import './App.css';
 
 function App() {
   return (
-    <main className="min-h-screen bg-app-background"> {/* Replaced gradient with themed background */}
-      <WorkflowDashboard />
-    </main>
+    <div className="app">
+      <Header />
+      <main>
+        <HeroSection />
+        <Features />
+      </main>
+      <Footer />
+    </div>
   );
 }
 

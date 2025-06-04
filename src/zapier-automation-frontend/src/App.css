@@ -1,0 +1,11 @@
+.app {
+  font-family: 'Roboto Mono', monospace;
+  background-color: #0A0A0A;
+  color: #FFFFFF;
+  min-height: 100vh;
+}
+
+main {
+  max-width: 1440px;
+  margin: 0 auto;
+}
