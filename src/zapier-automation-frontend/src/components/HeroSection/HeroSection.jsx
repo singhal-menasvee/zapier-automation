@@ -2,8 +2,15 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HeroSection.css';
 
-const HeroSection = () => {
+const HeroSection = ({ isAuthenticated }) => {
   const navigate = useNavigate();
+  const handleLaunchDashboard = () => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    } else {
+      alert('Please login first!');
+    }
+  };
   
   return (
     <section className="hero-section">
@@ -17,7 +24,7 @@ const HeroSection = () => {
         <div className="hero-buttons">
           <button 
             className="primary-button"
-            onClick={() => navigate('/dashboard')}
+            onClick={handleLaunchDashboard}
           >
             Launch Dashboard
           </button>

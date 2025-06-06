@@ -8,8 +8,12 @@ body {
   background-color: #0A0A0A;
   color: #FFFFFF;
   font-family: 'Roboto Mono', monospace;
+  overflow-x: hidden;
+  flex:none;
+  order: 0;
+  flex-grow: 0;
 }
 
-* {
+/* * {
   box-sizing: border-box;
-}
+} */

@@ -1,7 +1,7 @@
 import React from 'react';
 import '../Dashboard.css';
 
-const TopNavigation = () => {
+const TopNavigation = ({ principal }) => {
   return (
     <header className="top-navigation-bar">
       {/* Left side - Home icon */}
@@ -36,7 +36,7 @@ const TopNavigation = () => {
               <circle cx="12" cy="7" r="4"/>
             </svg>
           </div>
-          <span className="user-name">UserName</span>
+          <span className="user-name">{principal || "UserName"}</span>
         </div>
       </div>
     </header>

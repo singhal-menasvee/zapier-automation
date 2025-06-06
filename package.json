@@ -19,6 +19,7 @@
     "@tailwindcss/postcss": "^4.1.8"
   },
   "dependencies": {
+    "@dfinity/auth-client": "^2.4.1",
     "react-router-dom": "^7.6.2"
   }
 }
