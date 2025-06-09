@@ -1,6 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HeroSection.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRocket } from '@fortawesome/free-solid-svg-icons';
+import { faPlay } from '@fortawesome/free-solid-svg-icons';
+
+
 
 const HeroSection = ({ isAuthenticated }) => {
   const navigate = useNavigate();
@@ -26,9 +31,12 @@ const HeroSection = ({ isAuthenticated }) => {
             className="primary-button"
             onClick={handleLaunchDashboard}
           >
-            Launch Dashboard
+            <FontAwesomeIcon icon={faRocket} />&nbsp;
+                 Launch Dashboard
           </button>
-          <button className="secondary-button">Watch Demo</button>
+          <button className="secondary-button">
+            <FontAwesomeIcon icon= {faPlay} />&nbsp;
+            Watch Demo</button>
         </div>
       </div>
       <div className="hero-background">

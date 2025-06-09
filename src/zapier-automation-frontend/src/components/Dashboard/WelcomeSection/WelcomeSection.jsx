@@ -1,7 +1,7 @@
 import React from 'react';
 import '../Dashboard.css';
 
-const WelcomeSection = () => {
+const WelcomeSection = ({onCreateWorkflow}) => {
   return (
     <section className="welcome-section">
       {/* Background decorative elements */}
@@ -23,9 +23,9 @@ const WelcomeSection = () => {
         <div className="welcome-text-content">
           <h1 className="welcome-title">Welcome user!</h1>
           <p className="welcome-subtitle">what do you wanna do today?</p>
-          <button className="create-workflow-button">
+          <button className="create-workflow-button" onClick={onCreateWorkflow}>
             <img src="/assets/plus.svg"/>
-            <span className="button-text">Create Workflow</span>
+            <span className="button-text" >Create Workflow</span>
           </button>
         </div>
         

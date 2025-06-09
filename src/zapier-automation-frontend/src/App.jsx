@@ -5,13 +5,15 @@ import HeroSection from './components/HeroSection/HeroSection';
 import Features from './components/Features/Features';
 import Footer from './components/Footer/Footer';
 import Dashboard from './components/Dashboard/Dashboard';
+import Canvas from './components/Canvas/Canvas';
 import { AuthClient } from '@dfinity/auth-client';
 import './App.css';
 
 const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const isDashboard = location.pathname === '/dashboard';
+  const hideLayout = location.pathname === '/dashboard' || location.pathname === '/Canvas';
+
 
   const [authClient, setAuthClient] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -52,14 +54,15 @@ const AppContent = () => {
 
   return (
     <div className="app">
-      {!isDashboard && (
-        <Header
-          isAuthenticated={isAuthenticated}
-          principal={principal}
-          onLogin={login}
-          onLogout={logout}
-        />
-      )}
+      {!hideLayout && (
+  <Header
+    isAuthenticated={isAuthenticated}
+    principal={principal}
+    onLogin={login}
+    onLogout={logout}
+  />
+)}
+
       <main>
         <Routes>
           <Route
@@ -75,9 +78,13 @@ const AppContent = () => {
           path="/dashboard" 
           element={<Dashboard authClient={authClient} />} 
           />
+          <Route path= "/Canvas"
+          element={<Canvas/>}
+          />
         </Routes>
       </main>
-      {!isDashboard && <Footer />}
+      {!hideLayout && <Footer />}
+
     </div>
   );
 };

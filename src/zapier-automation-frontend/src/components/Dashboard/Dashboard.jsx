@@ -3,10 +3,22 @@ import TopNavigation from './TopNavigation/TopNavigation';
 import Sidebars from './Sidebars/Sidebars';
 import WelcomeSection from './WelcomeSection/WelcomeSection';
 import WorkflowsSection from './WorkflowsSection/WorkflowsSection';
+import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
 const Dashboard = ({ authClient }) => {
+  const navigate = useNavigate();
   const [principal, setPrincipal] = useState(null);
+
+  const isAuthenticated = !!principal;
+
+  const handleWorkflowCreation = () => {
+    if (isAuthenticated) {
+      navigate('/Canvas');
+    } else {
+      alert('Please login first!');
+    }
+  };
 
   useEffect(() => {
     if (authClient) {
@@ -21,12 +33,11 @@ const Dashboard = ({ authClient }) => {
       <div className="dashboard-main">
         <Sidebars />
         <div className="dashboard-content">
-          <WelcomeSection />
+          <WelcomeSection onCreateWorkflow={handleWorkflowCreation} />
           <WorkflowsSection />
         </div>
       </div>
     </div>
   );
 };
-
 export default Dashboard;

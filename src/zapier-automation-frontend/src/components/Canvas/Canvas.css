@@ -1,0 +1,14 @@
+.canvas-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #0F0F0F;
+  color: #FFFFFF;
+  font-family: 'Poppins', sans-serif;
+}
+
+.canvas-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}

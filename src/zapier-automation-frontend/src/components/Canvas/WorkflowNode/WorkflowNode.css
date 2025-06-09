@@ -1,0 +1,95 @@
+.workflow-node {
+  width: 256px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border-left: 4px solid;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.trigger {
+  filter: drop-shadow(0px 4px 7.3px rgba(16, 185, 129, 0.72));
+}
+
+.action {
+  filter: drop-shadow(0px 4px 7.7px rgba(56, 189, 248, 0.63));
+}
+
+.node-header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  gap: 12px;
+}
+
+.node-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-shape {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.node-title {
+  flex: 1;
+}
+
+.node-title h3 {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.node-title p {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  color: #9CA3AF;
+  margin: 0;
+}
+
+.node-menu {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+}
+
+.menu-dot {
+  width: 4px;
+  height: 4px;
+  background: #6B7280;
+  border-radius: 50%;
+}
+
+.node-content {
+  background: #262626;
+  padding: 16px;
+}
+
+.node-content h4 {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 21px;
+  color: #FFFFFF;
+  margin: 0 0 4px 0;
+}
+
+.node-content p {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 18px;
+  color: #9CA3AF;
+  margin: 0;
+}
