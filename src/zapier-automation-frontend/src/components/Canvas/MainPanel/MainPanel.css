@@ -18,7 +18,14 @@
   width: 2px;
   height: 40px;
   background: #FFFFFF;
+  margin: -30px 0;
+}
+.connection-line1{
+  width: 2px;
+  height: 40px;
+  background: #FFFFFF;
   margin: -20px 0;
+
 }
 
 .add-step-btn {

@@ -1,0 +1,28 @@
+.integration-picker {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  background: rgb(0, 0, 0);
+  border: 1px solid #e0e0e0;
+  padding: 0.5rem;
+  border-radius: 8px;
+  z-index: 100;
+  width: 200px;
+}
+
+.integration-option {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.integration-option:hover {
+  background: #f5f5f5;
+}
+
+.integration-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+}
