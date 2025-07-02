@@ -1,47 +1,11 @@
-.top-bar {
-  height: 64px;
-  background: #1A1A1A;
-  border-bottom: 1px solid #1F2937;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
-}
-
-.workflow-info {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.workflow-title {
-  font-weight: 500;
-  font-size: 20px;
-  line-height: 28px;
-  color: #FFFFFF;
-  margin: 0;
-}
-
-.auto-save {
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 20px;
-  color: #6B7280;
-}
-
-.success-rate {
-  font-weight: 500;
-  font-size: 18px;
-  line-height: 28px;
-  color: #FFFFFF;
-}
-
 .action-buttons {
   display: flex;
   gap: 12px;
 }
 
-.preview-btn, .save-btn, .share-btn {
+.preview-btn,
+.save-btn,
+.share-btn {
   height: 36px;
   border-radius: 8px;
   display: flex;
@@ -52,28 +16,31 @@
   font-size: 14px;
   line-height: 21px;
   color: #FFFFFF;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .preview-btn {
-  background: #1F2937;
+  background-color: #1F2937;
+}
+
+.preview-btn:hover {
+  background-color: #374151;
 }
 
 .save-btn {
-  background: #38BDF8;
+  background-color: #38BDF8;
+}
+
+.save-btn:hover {
+  background-color: #0ea5e9;
 }
 
 .share-btn {
-  background: #A855F7;
+  background-color: #A855F7;
 }
 
-.user-profile {
-  display: flex;
-  align-items: center;
-}
-
-.profile-pic {
-  width: 40px;
-  height: 40px;
-  border-radius: 9999px;
-  background: rgba(56, 189, 248, 0.5);
+.share-btn:hover {
+  background-color: #9333ea;
 }

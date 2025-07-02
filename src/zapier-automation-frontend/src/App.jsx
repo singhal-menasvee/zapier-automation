@@ -7,6 +7,7 @@ import Footer from './components/Footer/Footer';
 import Dashboard from './components/Dashboard/Dashboard';
 import Canvas from './components/Canvas/Canvas';
 import { AuthClient } from '@dfinity/auth-client';
+import OAuth2Callback from './components/OAuth2Callback';
 import './App.css';
 
 const AppContent = () => {
@@ -81,6 +82,7 @@ const AppContent = () => {
           <Route path= "/Canvas"
           element={<Canvas/>}
           />
+          <Route path="/oauth2callback" element={<OAuth2Callback />} />
         </Routes>
       </main>
       {!hideLayout && <Footer />}

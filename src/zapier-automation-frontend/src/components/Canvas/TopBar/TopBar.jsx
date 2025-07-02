@@ -2,10 +2,11 @@ import React from 'react';
 import './TopBar.css';
 
 const TopBar = () => {
+  
   return (
     <header className="top-bar">
       <div className="workflow-info">
-        <h1 className="workflow-title">Untitled Workflow</h1>
+        <h1 className="workflow-title"></h1>
         <span className="auto-save">Auto-saved 2 run logs</span>
       </div>
       <div className="success-rate">100%</div>
@@ -27,7 +28,9 @@ const TopBar = () => {
         <div className="profile-pic"></div>
       </div>
     </header>
+    
   );
 };
+console.log("TopBar rendered!");
 
 export default TopBar;

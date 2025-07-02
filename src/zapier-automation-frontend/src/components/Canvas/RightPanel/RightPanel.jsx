@@ -1,39 +1,62 @@
-import React from 'react';
+import React, { useState } from 'react';
 import IntegrationCard from '../IntegrationCard/IntegrationCard';
+import GoogleCalendarPanel from './GoogleCalendarPanel';
 import './RightPanel.css';
 
 const RightPanel = () => {
+  const [selectedIntegration, setSelectedIntegration] = useState(null);
+
+  const handleIntegrationClick = (name) => {
+    setSelectedIntegration(name);
+  };
+
   return (
     <aside className="right-panel">
       <div className="panel-header">
         <h2>Node Configuration</h2>
         <p>Select a node to configure its settings</p>
       </div>
+
+      {selectedIntegration === 'Google Calendar' && (
+        <GoogleCalendarPanel onClose={() => setSelectedIntegration(null)} />
+      )}
+
       <div className="integrations-section">
         <h3>Available Integrations</h3>
         <div className="integrations-grid">
           <IntegrationCard 
+            name="Google Calendar" 
+            color="#34A853" 
+            icon="calendar" 
+            onClick={() => handleIntegrationClick('Google Calendar')}
+          />
+          <IntegrationCard 
             name="Gmail" 
             color="#EF4444" 
-            icon="gmail"
+            icon="gmail" 
+            onClick={() => handleIntegrationClick('Gmail')}
           />
           <IntegrationCard 
             name="Slack" 
             color="#2563EB" 
-            icon="slack"
+            icon="slack" 
+            onClick={() => handleIntegrationClick('Slack')}
           />
           <IntegrationCard 
             name="Discord" 
             color="#9333EA" 
-            icon="discord"
+            icon="discord" 
+            onClick={() => handleIntegrationClick('Discord')}
           />
           <IntegrationCard 
             name="WhatsApp" 
             color="#16A34A" 
-            icon="whatsapp"
+            icon="whatsapp" 
+            onClick={() => handleIntegrationClick('WhatsApp')}
           />
         </div>
       </div>
+
       <div className="smart-contracts-section">
         <h3>Smart Contracts</h3>
         <div className="contract-actions">

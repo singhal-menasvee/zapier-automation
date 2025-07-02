@@ -6,14 +6,18 @@ const Header = ({ isAuthenticated, principal, onLogin, onLogout }) => {
     <header className="header">
       <div className="header-container">
         <div className="logo-container">
-          <div className="logo-icon"></div>
+          <img src="/assets/logo.png" alt="logo" className="logo-img" />
           <span className="logo-text">DecentralFlow</span>
         </div>
         <div className="nav-buttons">
           {isAuthenticated ? (
             <>
-              <span className="principal-text">{principal.slice(0, 6)}...{principal.slice(-6)}</span>
-              <button className="login-btn" onClick={onLogout}>Logout</button>
+              <span className="principal-text">
+                {principal.slice(0, 6)}...{principal.slice(-6)}
+              </span>
+              <button className="login-btn" onClick={onLogout}>
+                Logout
+              </button>
             </>
           ) : (
             <>
