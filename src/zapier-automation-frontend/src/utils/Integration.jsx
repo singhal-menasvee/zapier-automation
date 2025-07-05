@@ -1,3 +1,4 @@
+// utils/Integration.js
 import {
   faEnvelope,
   faBolt,
@@ -15,14 +16,12 @@ import {
   faGoogle,
   faSlack,
   faDiscord,
-  
 } from '@fortawesome/free-brands-svg-icons';
 
 export const integrations = [
   { name: "Gmail", icon: faEnvelope },
   { name: "Slack", icon: faSlack },
   { name: "Discord", icon: faDiscord },
-  
   { name: "Google Calendar", icon: faCalendar },
   { name: "Google Sheets", icon: faTable },
   { name: "Webhook", icon: faBolt },

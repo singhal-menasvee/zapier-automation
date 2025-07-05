@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "setup": "npm i && dfx canister create zapier-automation-backend && dfx generate zapier-automation-backend && dfx deploy",
+    "dev": "vite",
     "start": "vite --port 3000",
     "prebuild": "dfx generate",
     "build": "tsc && vite build",

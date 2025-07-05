@@ -1,17 +1,45 @@
 .main-panel {
   flex: 1;
   background: linear-gradient(90deg, #0F0F0F 0%, #1A1A1A 100%);
-  overflow: auto;
-  padding: 40px;
+  overflow: hidden; /* Changed from auto to hidden for better canvas control */
+  padding: 0; /* Remove padding to allow full canvas */
+  position: relative;
 }
 
 .workflow-canvas {
   position: relative;
-  min-height: 100%;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s ease-out;
+  user-select: none;
+}
+
+/* Dot Grid Background */
+.dot-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.workflow-content {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 40px;
+  padding: 40px;
 }
 
 .connection-line {
@@ -19,13 +47,17 @@
   height: 40px;
   background: #FFFFFF;
   margin: -30px 0;
+  position: relative;
+  z-index: 2;
 }
-.connection-line1{
+
+.connection-line1 {
   width: 2px;
   height: 40px;
   background: #FFFFFF;
   margin: -20px 0;
-
+  position: relative;
+  z-index: 2;
 }
 
 .add-step-btn {
@@ -45,8 +77,83 @@
   color: #FFFFFF;
   cursor: pointer;
   margin-top: 20px;
+  position: relative;
+  z-index: 2;
 }
 
 .add-step-btn:hover {
   background: #9333EA;
+}
+
+/* Zoom Controls */
+.zoom-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.zoom-btn {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(5px);
+}
+
+.zoom-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.zoom-btn:active {
+  transform: scale(0.95);
+}
+
+.zoom-level {
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 50px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .zoom-controls {
+    top: 10px;
+    right: 10px;
+    padding: 8px;
+  }
+  
+  .zoom-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 12px;
+  }
+  
+  .workflow-content {
+    padding: 20px;
+  }
 }
