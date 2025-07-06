@@ -44,8 +44,7 @@ const NodeConfigPanel = ({ app, onClose }) => {
           <label htmlFor="account-connect">Account</label>
           {app.name === 'Google Calendar' && (
             <div className="google-panel">
-              <GoogleCalendarPanel 
-                onConnect={() => alert('OAuth flow here')} 
+              <GoogleCalendarPanel  
                 onClose={onClose}
               />
             </div>

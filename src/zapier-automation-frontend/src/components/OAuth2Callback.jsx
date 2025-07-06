@@ -1,25 +1,41 @@
-import { useEffect } from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { zapier_automation_backend } from "declarations/zapier-automation-backend";
 
 const OAuth2Callback = () => {
+  const navigate = useNavigate();
+
   useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get("code");
-    if (code) {
-      fetch('/api/exchange-token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
-      })
-      .then(res => res.json())
-      .then(data => {
-        console.log("Access token:", data.access_token);
-        // Redirect or store token if needed
-      });
-    }
-  }, []);
+    const url = new URL(window.location.href);
+    const code = url.searchParams.get("code");
+
+    const exchangeCode = async () => {
+      if (!code) {
+        console.error("No authorization code found in URL");
+        return;
+      }
+
+      try {
+        const tokenResponse = await zapier_automation_backend.exchange_google_code(code);
+        console.log("Received token response:", tokenResponse);
+
+        // Store access token in local storage or state
+        localStorage.setItem("google_access_token", tokenResponse.access_token);
+
+        // Redirect to dashboard or canvas
+        navigate("/Canvas");
+      } catch (err) {
+        console.error("Error exchanging code:", err);
+      }
+    };
+
+    exchangeCode();
+  }, [navigate]);
 
   return (
-    <div className="p-10 text-center">
-      <h2 className="text-xl font-semibold">Connecting your Google Account...</h2>
+    <div style={{ padding: "2rem", color: "#fff" }}>
+      <h2>🔄 Connecting your Google Account…</h2>
+      <p>Please wait while we finish connecting.</p>
     </div>
   );
 };
