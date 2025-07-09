@@ -16,11 +16,15 @@ struct GoogleTokenResponse {
 
 #[update]
 pub async fn exchange_google_code(code: String) -> Result<GoogleTokenResponse, String> {
+    let client_id = std::env::var("GOOGLE_CLIENT_ID").unwrap_or_default();
+    let client_secret = std::env::var("GOOGLE_CLIENT_SECRET").unwrap_or_default();
+    let redirect_uri = std::env::var("GOOGLE_REDIRECT_URI").unwrap_or_else(|_| {
+        "http://localhost:3000/OAuth2Callback".to_string() // or whatever you used in Google console
+    });
+
     let body = format!(
         "code={}&client_id={}&client_secret={}&redirect_uri={}&grant_type=authorization_code",
-        let client_id = std::env::var("GOOGLE_CLIENT_ID").unwrap_or_default();
-let client_secret = std::env::var("GOOGLE_CLIENT_SECRET").unwrap_or_default();
-
+        code, client_id, client_secret, redirect_uri
     );
 
     let request = CanisterHttpRequestArgument {

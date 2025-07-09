@@ -17,7 +17,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>© 2024 AutoFlow. Decentralized automation for everyone.</p>
+          <p>© 2024 DecentralFlow. Decentralized automation for everyone.</p>
         </div>
       </div>
     </footer>

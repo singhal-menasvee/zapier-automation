@@ -4,6 +4,11 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::time::Duration;
 use ic_cdk::api::time;
+use crate::adapters::web2;
+use crate::adapters::web2::GoogleTokenResponse;
+
+ 
+
 
 // Define Trigger Types
 #[derive(CandidType, Deserialize, Clone, Debug)]
@@ -337,3 +342,10 @@ fn schedule_recurring_execution() {
         run_scheduled_workflows();
     });
 }
+
+
+#[ic_cdk::update]
+async fn exchange_google_code(code: String) -> Result<GoogleTokenResponse, String> {
+    web2::exchange_google_code(code).await
+}
+
