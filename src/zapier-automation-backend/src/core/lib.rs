@@ -344,8 +344,8 @@ fn schedule_recurring_execution() {
 }
 
 
-#[ic_cdk::update]
-async fn exchange_google_code(code: String) -> Result<GoogleTokenResponse, String> {
-    web2::exchange_google_code(code).await
-}
+// #[ic_cdk::update]
+// async fn exchange_google_code(code: String) -> Result<GoogleTokenResponse, String> {
+//     web2::exchange_google_code(code).await
+// }
 

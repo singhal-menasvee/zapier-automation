@@ -1,17 +1,19 @@
 use ic_cdk::api::management_canister::http_request::{
-    CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse, TransformArgs,
+    CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse,
 };
-use ic_cdk::{query, update};
+use ic_cdk::update;
 use serde::{Deserialize, Serialize};
+use candid::CandidType;
 use std::str;
 
-#[derive(Serialize, Deserialize, Debug)]
-struct GoogleTokenResponse {
-    access_token: String,
-    expires_in: u32,
-    refresh_token: Option<String>,
-    scope: String,
-    token_type: String,
+// Add CandidType derive and make struct public
+#[derive(Serialize, Deserialize, Debug, CandidType)]
+pub struct GoogleTokenResponse {
+    pub access_token: String,
+    pub expires_in: u32,
+    pub refresh_token: Option<String>,
+    pub scope: String,
+    pub token_type: String,
 }
 
 #[update]
@@ -19,7 +21,7 @@ pub async fn exchange_google_code(code: String) -> Result<GoogleTokenResponse, S
     let client_id = std::env::var("GOOGLE_CLIENT_ID").unwrap_or_default();
     let client_secret = std::env::var("GOOGLE_CLIENT_SECRET").unwrap_or_default();
     let redirect_uri = std::env::var("GOOGLE_REDIRECT_URI").unwrap_or_else(|_| {
-        "http://localhost:3000/OAuth2Callback".to_string() // or whatever you used in Google console
+        "http://localhost:3000/OAuth2Callback".to_string()
     });
 
     let body = format!(
@@ -41,12 +43,13 @@ pub async fn exchange_google_code(code: String) -> Result<GoogleTokenResponse, S
         transform: None,
     };
 
+    // Fix: Add max_response_bytes parameter
     let (response,): (HttpResponse,) =
-        ic_cdk::api::management_canister::http_request::http_request(request)
+        ic_cdk::api::management_canister::http_request::http_request(request, 2_000_000_000)
             .await
             .map_err(|e| format!("HTTPS outcall failed: {:?}", e))?;
 
-    if response.status != 200 {
+    if response.status != 200u16 {
         return Err(format!(
             "Token exchange failed: {}",
             String::from_utf8_lossy(&response.body)
