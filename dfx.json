@@ -3,25 +3,58 @@
     "zapier-automation-backend": {
       "candid": "src/zapier-automation-backend/zapier-automation-backend.did",
       "package": "zapier-automation-backend",
-      "type": "rust"
+      "type": "rust",
+      "workspace": "zapier-automation-backend"
     },
     "zapier-automation-frontend": {
       "dependencies": [
-        "zapier-automation-backend"
+        "zapier-automation-backend",
+        "internet_identity"
       ],
       "source": [
-        "src/zapier-automation-frontend/dist"
+        "src/zapier-automation-frontend/dist",
+        "src/zapier-automation-frontend/assets"
       ],
-      "type": "assets",
-      "workspace": "zapier-automation-frontend"
+      "declarations": {
+        "output": "src/declarations/zapier-automation-frontend"
+      },
+      "build": [
+        "npm run --workspace zapier-automation-frontend build"
+      ],
+      "type": "assets"
+    },
+    "internet_identity": {
+      "type": "custom",
+      "candid": "canisters/internet_identity/internet_identity.did",
+      "wasm": "canisters/internet_identity/internet_identity_production.wasm",
+      "source": [
+        "canisters/internet_identity/src/dist"
+      ],
+      "declarations": {
+        "output": "src/declarations/internet_identity"
+      },
+      "remote": {
+        "id": {
+          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+        }
+      }
     }
   },
   "defaults": {
     "build": {
-      "args": "",
-      "packtool": ""
+      "args": ""
     }
   },
-  "output_env_file": ".env",
+  "networks": {
+    "local": {
+      "type": "ephemeral"
+    },
+    "ic": {
+      "providers": [
+        "https://mainnet.dfinity.network"
+      ],
+      "type": "persistent"
+    }
+  },
   "version": 1
 }

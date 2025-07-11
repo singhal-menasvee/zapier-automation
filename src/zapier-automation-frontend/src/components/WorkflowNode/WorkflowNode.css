@@ -1,0 +1,148 @@
+/*
+  WorkflowNode.css: Custom styles for the WorkflowNode component.
+  These styles are designed to be simple and can be enhanced with Bootstrap classes
+  or more complex CSS as needed.
+*/
+
+.workflow-node {
+  /* Basic positioning and sizing */
+  width: 250px;
+  min-height: 100px;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: absolute; /* Allows positioning on the canvas */
+  cursor: grab; /* Indicates draggable */
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+/* Specific styles for selected nodes */
+.workflow-node.selected {
+  border: 2px solid var(--bs-primary); /* Use Bootstrap primary color for selected state */
+  box-shadow: 0 0 15px rgba(0, 123, 255, 0.5); /* Stronger shadow for selected */
+}
+
+.workflow-node.trigger {
+  /* Specific styles for trigger nodes */
+  border-left: 5px solid #10B981; /* Example color for trigger */
+}
+
+.workflow-node.action {
+  /* Specific styles for action nodes */
+  border-left: 5px solid #38BDF8; /* Example color for action */
+}
+
+.node-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.node-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+.node-title {
+  flex-grow: 1;
+}
+
+.node-title h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--bs-white); /* Ensure title is white */
+}
+
+.node-title p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--bs-gray-500); /* Use a muted gray for subtitle */
+}
+
+.node-menu {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  width: 20px;
+  height: 20px;
+}
+
+.node-menu .menu-dot {
+  width: 4px;
+  height: 4px;
+  background-color: var(--bs-gray-600); /* Muted color for dots */
+  border-radius: 50%;
+}
+
+/* Dropdown specific styles (can be integrated with Bootstrap's dropdowns) */
+.node-dropdown {
+  position: absolute;
+  top: 100%; /* Position below the menu button */
+  right: 0;
+  background-color: var(--bs-dark); /* Dark background for dropdown */
+  border: 1px solid var(--bs-secondary); /* Border color */
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000; /* Ensure it's above other elements */
+  min-width: 150px;
+}
+
+.node-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 8px 15px;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--bs-white); /* White text for dropdown items */
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.node-dropdown button:hover {
+  background-color: var(--bs-secondary); /* Highlight on hover */
+}
+
+.node-dropdown button.text-danger:hover {
+  background-color: var(--bs-danger); /* Red background for delete on hover */
+  color: var(--bs-white);
+}
+
+.node-dropdown hr {
+  margin: 5px 0;
+  border-color: var(--bs-gray-700); /* Darker divider */
+}
+
+/* Integration Picker styles (if you choose to embed it directly) */
+.integration-picker-embedded {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid var(--bs-gray-700);
+}
+
+.integration-picker-embedded h4 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  color: var(--bs-white);
+}
+
+.integration-picker-embedded .integration-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+}

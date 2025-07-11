@@ -1,67 +1,62 @@
+/*
+  LeftSidebar.css: Custom styles for the LeftSidebar component.
+  These styles complement Bootstrap 5 classes used in LeftSidebar.jsx.
+*/
+
 .left-sidebar {
-  width: 64px;
-  background: #1A1A1A;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 24px;
-  gap: 32px;
+  /*
+    bg-dark, text-white, d-flex, flex-column, p-3, border-end, border-secondary
+    are Bootstrap classes.
+    We define a fixed width for the sidebar.
+  */
+  width: 250px; /* Fixed width for the sidebar */
+  min-width: 250px; /* Prevent shrinking */
+  max-width: 250px; /* Prevent expanding */
+  flex-shrink: 0; /* Ensures it doesn't shrink when other flex items grow */
+  /* Add any other custom styles or overrides here */
 }
 
-.sidebar-item {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
+/* Styles for the sidebar header (logo/app name) */
+/* h4 fw-bold text-info are Bootstrap classes */
+/* text-muted small mb-0 are Bootstrap classes */
+
+/* Styles for navigation items */
+.left-sidebar .nav-item .nav-link {
+  /*
+    d-flex, align-items-center, w-100, text-start are Bootstrap classes.
+    text-secondary is for default state.
+  */
+  padding: 0.75rem 1rem; /* Adjust padding for nav links */
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
-.sidebar-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* Hover state for nav links */
+.left-sidebar .nav-item .nav-link:hover {
+  background-color: var(--bs-secondary); /* Bootstrap secondary color for hover */
+  color: var(--bs-white) !important; /* Ensure text remains white on hover */
+  border-radius: 0.25rem; /* Apply rounded corners on hover */
 }
 
-.tools-icon {
-  background-color: rgba(56, 189, 248, 0.2);
+/* Active state for nav links */
+.left-sidebar .nav-item .nav-link.active {
+  /*
+    active, bg-primary, text-white, rounded are Bootstrap classes.
+    Override any default Bootstrap active styles if necessary.
+  */
+  font-weight: bold; /* Make active item text bold */
 }
 
-.workflows-icon {
-  background-color: rgba(168, 85, 247, 0.2);
+/* Styles for the Font Awesome icons within nav links */
+.left-sidebar .nav-item .nav-link .svg-inline--fa {
+  font-size: 1.1rem; /* Adjust icon size */
+  width: 1.1em; /* Fix for inconsistent icon widths */
 }
 
-.templates-icon {
-  background-color: rgba(16, 185, 129, 0.2);
-}
+/* Styles for the text next to the icon */
+/* .left-sidebar .nav-item .nav-link .nav-text {
+  me-3 is a Bootstrap class for margin-right
+} */
 
-.logs-icon {
-  background-color: rgba(250, 204, 21, 0.2);
-}
-
-.settings-icon {
-  background-color: rgba(156, 163, 175, 0.2);
-}
-
-.tooltip {
-  position: absolute;
-  left: 72px;
-  background: #262626;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  line-height: 21px;
-  color: #FFFFFF;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
-  white-space: nowrap;
-}
-
-.sidebar-item:hover .tooltip {
-  opacity: 1;
-}
+/* Styles for the sidebar footer */
+/* mt-auto pt-3 border-top border-secondary text-center are Bootstrap classes */
+/* text-muted small mb-0 are Bootstrap classes */

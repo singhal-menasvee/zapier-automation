@@ -1,68 +1,13 @@
-.header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  height: 73px;
-  background: rgba(10, 10, 10, 0.95);
-  border-bottom: 1px solid #1F1F1F;
-  z-index: 100;
-}
+/*
+  This file is for custom CSS specific to the Header component.
+  Since Header.jsx uses Bootstrap 5 classes, most styling is handled by Bootstrap.
+  Add any overrides or additional styles here if needed.
+*/
 
-.header-container {
-  max-width: 1280px;
-  height: 72px;
-  margin: 0 auto;
-  padding: 0 80px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Example: Custom hover effect for dropdown items if not covered by Bootstrap */
+/*
+.dropdown-menu .dropdown-item:hover {
+  background-color: #343a40; // A slightly lighter dark background on hover
+  color: #ffffff; // Ensure text remains white
 }
-
-.logo-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.logo-img {
-  width: 65px;
-  height: 65px;
-  object-fit: contain;
-  border-radius: 6px;
-}
-
-
-.logo-text {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 20px;
-  line-height: 28px;
-  color: #FFFFFF;
-}
-
-.nav-buttons {
-  display: flex;
-  gap: 16px;
-}
-
-.login-btn {
-  width: 80px;
-  height: 40px;
-  background: transparent;
-  border: none;
-  color: #D1D5DB;
-  font-family: 'Roboto Mono', monospace;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.get-started-btn {
-  width: 154px;
-  height: 40px;
-  background: #3B82F6;
-  border: none;
-  border-radius: 8px;
-  color: #FFFFFF;
-  font-family: 'Roboto Mono', monospace;
-  font-size: 16px;
-  cursor: pointer;
-}
+*/

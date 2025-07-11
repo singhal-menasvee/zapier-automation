@@ -1,33 +1,37 @@
+/*
+  IntegrationCard.css: Custom styles for the IntegrationCard component.
+  These styles complement Bootstrap 5 classes used in IntegrationCard.jsx.
+*/
+
 .integration-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 13px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: transform 0.2s;
+  /*
+    card, text-center, cursor-pointer, h-100 are Bootstrap classes.
+    Add any custom overrides or additional styles here if needed.
+  */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border: 1px solid var(--bs-secondary); /* Subtle border for cards */
+  background-color: var(--bs-dark); /* Ensure dark background */
+  color: var(--bs-white); /* Ensure light text */
 }
 
 .integration-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-5px); /* Lift card slightly on hover */
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Stronger shadow on hover */
 }
 
-.card-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* d-flex flex-column align-items-center justify-content-center p-3 are Bootstrap classes */
+
+.integration-card .card-icon {
+  /*
+    rounded-circle, d-flex, align-items-center, justify-content-center, mb-2
+    are Bootstrap classes.
+    Width and height are set inline in JSX, but you can override here if needed.
+  */
+  flex-shrink: 0; /* Prevent icon from shrinking */
+  border: 2px solid rgba(255, 255, 255, 0.2); /* Light border around the icon circle */
 }
 
-.integration-card p {
-  font-weight: 500;
-  font-size: 12px;
-  line-height: 18px;
-  color: #FFFFFF;
-  margin: 0;
+.integration-card .card-text {
+  /* fw-semibold mb-0 are Bootstrap classes */
+  font-size: 0.9rem; /* Adjust font size if needed */
 }

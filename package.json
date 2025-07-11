@@ -1,28 +1,37 @@
 {
+  "name": "zapier-automation",
+  "version": "0.1.0",
+  "description": "DFINITY Internet Computer project for Zapier-like automation.",
+  "keywords": [
+    "Internet Computer",
+    "Motoko",
+    "Rust",
+    "React",
+    "Bootstrap",
+    "Web3"
+  ],
+  "private": true,
   "engines": {
     "node": ">=16.0.0",
-    "npm": ">=7.0.0"
+    "npm": ">=8.0.0"
   },
-  "name": "zapier-automation",
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
-    "prebuild": "npm run prebuild --workspaces --if-present",
-    "pretest": "npm run prebuild --workspaces --if-present",
-    "start": "npm start --workspaces --if-present",
-    "test": "npm test --workspaces --if-present"
+    "start": "dfx start --background && dfx deploy",
+    "stop": "dfx stop",
+    "deploy": "dfx deploy",
+    "deploy:frontend": "dfx deploy zapier-automation-frontend",
+    "deploy:backend": "dfx deploy zapier-automation-backend",
+    "generate": "dfx generate",
+    "build:frontend": "npm run build --workspace zapier-automation-frontend",
+    "build:backend": "npm run build --workspace zapier-automation-backend",
+    "build": "npm run build:backend && npm run build:frontend",
+    "test": "npm test --workspaces"
   },
-  "type": "module",
   "workspaces": [
-    "src/zapier-automation-frontend"
+    "src/zapier-automation-frontend",
+    "src/zapier-automation-backend"
   ],
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.8"
-  },
-  "dependencies": {
-    "@dfinity/auth-client": "^2.4.1",
-    "@fortawesome/free-brands-svg-icons": "^6.7.2",
-    "@fortawesome/free-solid-svg-icons": "^6.7.2",
-    "@fortawesome/react-fontawesome": "^0.2.2",
-    "react-router-dom": "^7.6.2"
+    "cross-env": "^7.0.3"
   }
 }
