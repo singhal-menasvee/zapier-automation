@@ -4,6 +4,8 @@
       "candid": "src/zapier-automation-backend/zapier-automation-backend.did",
       "package": "zapier-automation-backend",
       "type": "rust"
+      
+      }
     },
     "zapier-automation-frontend": {
       "dependencies": [
