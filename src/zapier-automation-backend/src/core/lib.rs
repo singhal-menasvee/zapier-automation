@@ -1,14 +1,14 @@
 use candid::{CandidType, Deserialize};
-use ic_cdk::caller;
+use ic_cdk::{caller, api::time};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::time::Duration;
-use ic_cdk::api::time;
 use crate::adapters::web2;
-use crate::adapters::web2::GoogleTokenResponse;
 
- 
-
+// Store Google tokens for users
+thread_local! {
+    static GOOGLE_TOKENS: RefCell<HashMap<String, web2::GoogleTokenResponse>> = RefCell::new(HashMap::new());
+}
 
 // Define Trigger Types
 #[derive(CandidType, Deserialize, Clone, Debug)]
@@ -24,6 +24,10 @@ pub enum Trigger {
     },
     TimeBased {
         cron: String,
+    },
+    GoogleCalendar {
+        calendar_id: String,
+        event_type: String, // "new_event", "updated_event", "deleted_event"
     },
 }
 
@@ -45,15 +49,14 @@ pub enum Action {
         args: Vec<String>,
     },
     MintNft {
-    to_principal: String,
-    metadata: String,
-},
- UpdateCanisterState {
+        to_principal: String,
+        metadata: String,
+    },
+    UpdateCanisterState {
         canister_id: String,
         state_key: String,
         state_value: String,
     },
-
 }
 
 // Define Condition Structure
@@ -98,6 +101,17 @@ pub struct WorkflowInput {
 // Store Workflows in a HashMap
 thread_local! {
     static WORKFLOW_STORE: RefCell<HashMap<String, Workflow>> = RefCell::new(HashMap::new());
+}
+
+// Store Workflow Logs
+thread_local! {
+    static WORKFLOW_LOGS: RefCell<HashMap<String, Vec<WorkflowLog>>> = RefCell::new(HashMap::new());
+}
+
+#[derive(CandidType, Deserialize, Clone, Debug)]
+pub struct WorkflowLog {
+    pub timestamp: u64,
+    pub message: String,
 }
 
 // Generate Unique Workflow ID
@@ -181,18 +195,6 @@ fn delete_workflow(id: String) -> Result<(), String> {
     })
 }
 
-// Define Workflow Logging Structure
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct WorkflowLog {
-    pub timestamp: u64,
-    pub message: String,
-}
-
-// Store Workflow Logs
-thread_local! {
-    static WORKFLOW_LOGS: RefCell<HashMap<String, Vec<WorkflowLog>>> = RefCell::new(HashMap::new());
-}
-
 // Log Workflow Events
 #[ic_cdk::update]
 fn log_workflow_event(workflow_id: String, message: String) {
@@ -245,6 +247,12 @@ fn execute_workflow(id: String) -> Result<(), String> {
                         contract_address, event_name, poll_interval_sec
                     ));
                 }
+                Trigger::GoogleCalendar { calendar_id, event_type } => {
+                    ic_cdk::print(format!(
+                        "Triggering workflow for Google Calendar {} event type '{}'",
+                        calendar_id, event_type
+                    ));
+                }
             }
 
             for action in &workflow.actions {
@@ -276,7 +284,6 @@ fn execute_workflow(id: String) -> Result<(), String> {
                             "Minting NFT to {} with metadata: {}",
                             to_principal, metadata
                         ));
-                        // TODO: Call NFT canister mint method via inter-canister call
                     }
                     Action::UpdateCanisterState {
                         canister_id,
@@ -287,7 +294,6 @@ fn execute_workflow(id: String) -> Result<(), String> {
                             "Updating canister {} state: {} = {}",
                             canister_id, state_key, state_value
                         ));
-                        // TODO: Call method on target canister
                     }
                 }
             }
@@ -299,7 +305,6 @@ fn execute_workflow(id: String) -> Result<(), String> {
         }
     })
 }
-
 
 // Automatically Run Scheduled Workflows
 #[ic_cdk::update]
@@ -314,7 +319,6 @@ fn run_scheduled_workflows() {
                     workflow.name, cron
                 ));
                 let id = workflow.id.clone();
-                // Trigger the workflow
                 execute_workflow(id).ok();
             }
 
@@ -328,24 +332,69 @@ fn run_scheduled_workflows() {
                     "Polling event '{}' on {} every {}s",
                     event_name, contract_address, poll_interval_sec
                 ));
-                // TODO: Poll external data source
             }
         }
     });
 }
 
 
-// Schedule periodic execution
+#[ic_cdk::update]
+#[candid::candid_method(update)]
+#[deprecated = "Use exchange_google_code_v2 instead"]
+pub async fn exchange_google_code_flat(code: String) -> web2::GoogleTokenResponse {
+    exchange_google_code_v2(code).await.expect("Failed to exchange code")
+}
+
+/// New version with proper error handling
+#[ic_cdk::update]
+#[candid::candid_method(update)]
+pub async fn exchange_google_code_v2(code: String) -> Result<web2::GoogleTokenResponse, String> {
+    let token_response = web2::exchange_google_code(code.clone()).await
+        .map_err(|e| format!("Failed to exchange code: {}", e))?;
+
+    let user_principal = caller().to_text();
+    GOOGLE_TOKENS.with(|tokens| {
+        tokens.borrow_mut().insert(user_principal, token_response.clone());
+    });
+
+    Ok(GoogleTokenResponse {
+        access_token: token_response.access_token,
+        expires_in: token_response.expires_in,
+        refresh_token: token_response.refresh_token,
+        scope: token_response.scope,
+        token_type: token_response.token_type,
+        id_token: token_response.id_token,
+    })
+}
+
+#[ic_cdk::query]
+#[candid::candid_method(query)]
+pub fn has_google_token() -> bool {
+    let user_principal = caller().to_text();
+    GOOGLE_TOKENS.with(|tokens| {
+        tokens.borrow().contains_key(&user_principal)
+    })
+}
+
+#[ic_cdk::update]
+#[candid::candid_method(update)]
+pub async fn get_google_calendars() -> Result<Vec<web2::GoogleCalendar>, String> {
+    let user_principal = caller().to_text();
+    
+    let token = GOOGLE_TOKENS.with(|tokens| {
+        tokens.borrow().get(&user_principal).cloned()
+    }).ok_or("No Google token found. Please authenticate first.")?;
+    
+    web2::get_google_calendars_with_token(&token.access_token).await
+}
+// Re-export web2 types for Candid
+pub use crate::adapters::web2::{
+    GoogleTokenResponse,
+    GoogleCalendar
+};
 #[ic_cdk::init]
 fn schedule_recurring_execution() {
     ic_cdk_timers::set_timer_interval(Duration::from_secs(600), || {
         run_scheduled_workflows();
     });
 }
-
-
-// #[ic_cdk::update]
-// async fn exchange_google_code(code: String) -> Result<GoogleTokenResponse, String> {
-//     web2::exchange_google_code(code).await
-// }
-
