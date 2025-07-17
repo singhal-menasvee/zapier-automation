@@ -3,7 +3,10 @@
     "zapier-automation-backend": {
       "candid": "src/zapier-automation-backend/zapier-automation-backend.did",
       "package": "zapier-automation-backend",
-      "type": "rust"
+      "type": "rust",
+      "rust": {
+        "optimization_level": "O3"  
+      }
       
       }
     },
@@ -16,8 +19,8 @@
       ],
       "type": "assets",
       "workspace": "zapier-automation-frontend"
-    }
-  },
+    },
+  
   "defaults": {
     "build": {
       "args": "",

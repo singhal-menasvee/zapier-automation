@@ -1,124 +1,94 @@
-// types
+// Type Definitions
 type WorkflowLog = record {
   timestamp: nat64;
   message: text;
 };
 
-type GoogleTokenResponse = record {
-  access_token: text;
-  expires_in: nat;
-  refresh_token: opt text;
-  scope: text;
-  token_type: text;
+
+
+type GoogleCalendar = record {
+  id: text;
+  summary: text;
+  description: opt text;
+  access_role: text;
 };
 
-// service
+type Trigger = variant {
+  ContractEvent : record {
+    contract_address : text;
+    event_name : text;
+    poll_interval_sec : nat64;
+  };
+  HttpRequest : record {
+    url : text;
+    method : text;
+  };
+  TimeBased : record {
+    cron : text;
+  };
+  GoogleCalendar : record {
+    calendar_id : text;
+    event_type : text;
+  };
+};
+
+type Action = variant {
+  SendHttpRequest : record { url : text; method : text; body : text; };
+  NotifyUser : record { user_id : text; message : text; };
+  ExecuteContractMethod : record {
+    contract_address : text;
+    method : text;
+    args : vec text;
+  };
+  MintNft : record {
+    to_principal : text;
+    metadata : text;
+  };
+  UpdateCanisterState : record {
+    canister_id : text;
+    state_key : text;
+    state_value : text;
+  };
+};
+
+type Condition = record {
+  field : text;
+  operator : text;
+  value : text;
+};
+
+type Workflow = record {
+  id : text;
+  name : text;
+  trigger : Trigger;
+  actions : vec Action;
+  conditions : opt vec Condition;
+  status : variant { Active; Paused; Disabled };
+  owner : text;
+  created_at : nat64;
+  updated_at : nat64;
+};
+type GoogleTokenResponse = record {
+    access_token: text;
+    expires_in: nat;
+    refresh_token: opt text;
+    scope: text;
+    token_type: text;
+    id_token: opt text;
+};
+
+// Service Definition
 service : {
   create_workflow : (record {
     name : text;
-    trigger : variant {
-      ContractEvent : record {
-        contract_address : text;
-        event_name : text;
-        poll_interval_sec : nat64;
-      };
-      HttpRequest : record {
-        url : text;
-        method : text;
-      };
-      TimeBased : record {
-        cron : text;
-      };
-    };
-    actions : vec variant {
-      SendHttpRequest : record { url : text; method : text; body : text; };
-      NotifyUser : record { user_id : text; message : text; };
-      ExecuteContractMethod : record {
-        contract_address : text;
-        method : text;
-        args : vec text;
-      };
-    };
-    conditions : opt vec record {
-      field : text;
-      operator : text;
-      value : text;
-    };
+    trigger : Trigger;
+    actions : vec Action;
+    conditions : opt vec Condition;
   }) -> (text);
 
-  list_workflows : () -> (vec record {
-    id : text;
-    name : text;
-    trigger : variant {
-      ContractEvent : record {
-        contract_address : text;
-        event_name : text;
-        poll_interval_sec : nat64;
-      };
-      HttpRequest : record {
-        url : text;
-        method : text;
-      };
-      TimeBased : record {
-        cron : text;
-      };
-    };
-    actions : vec variant {
-      SendHttpRequest : record { url : text; method : text; body : text; };
-      NotifyUser : record { user_id : text; message : text; };
-      ExecuteContractMethod : record {
-        contract_address : text;
-        method : text;
-        args : vec text;
-      };
-    };
-    conditions : opt vec record {
-      field : text;
-      operator : text;
-      value : text;
-    };
-    status : variant { Active; Paused; Disabled };
-    owner : text;
-    created_at : nat64;
-    updated_at : nat64;
-  });
+  list_workflows : () -> (vec Workflow);
 
-  get_workflow : (text) -> (opt record {
-    id : text;
-    name : text;
-    trigger : variant {
-      ContractEvent : record {
-        contract_address : text;
-        event_name : text;
-        poll_interval_sec : nat64;
-      };
-      HttpRequest : record {
-        url : text;
-        method : text;
-      };
-      TimeBased : record {
-        cron : text;
-      };
-    };
-    actions : vec variant {
-      SendHttpRequest : record { url : text; method : text; body : text; };
-      NotifyUser : record { user_id : text; message : text; };
-      ExecuteContractMethod : record {
-        contract_address : text;
-        method : text;
-        args : vec text;
-      };
-    };
-    conditions : opt vec record {
-      field : text;
-      operator : text;
-      value : text;
-    };
-    status : variant { Active; Paused; Disabled };
-    owner : text;
-    created_at : nat64;
-    updated_at : nat64;
-  });
+  get_workflow : (text) -> (opt Workflow);
 
   update_workflow_status : (text, variant { Active; Paused; Disabled }) -> (variant { ok : null; err : text });
 
@@ -128,5 +98,15 @@ service : {
 
   log_workflow_event : (text, text) -> ();
 
-  exchange_google_code : (text) -> (GoogleTokenResponse);
+  exchange_google_code_flat : (text) -> (GoogleTokenResponse);
+
+  exchange_google_code_v2 : (text) -> (variant { ok: GoogleTokenResponse; err: text });
+
+  has_google_token : () -> (bool) query;
+
+  get_google_calendars : () -> (variant { ok : vec GoogleCalendar; err : text });
+
+  execute_workflow : (text) -> (variant { ok : null; err : text });
+
+  run_scheduled_workflows : () -> ();
 };
