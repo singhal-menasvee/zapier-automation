@@ -5,9 +5,7 @@
       "package": "zapier-automation-backend",
       "type": "rust",
       "rust": {
-        "optimization_level": "O3"  
-      }
-      
+        "optimization_level": "O3"
       }
     },
     "zapier-automation-frontend": {
@@ -19,8 +17,8 @@
       ],
       "type": "assets",
       "workspace": "zapier-automation-frontend"
-    },
-  
+    }
+  },
   "defaults": {
     "build": {
       "args": "",
