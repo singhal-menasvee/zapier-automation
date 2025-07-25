@@ -13,11 +13,13 @@ const GoogleCalendarPanel = ({ onClose, onConnect, selectedTrigger }) => {
   const [selectedCalendar, setSelectedCalendar] = useState('');
   const [eventType, setEventType] = useState('new_event');
 
+  // Check connection status on mount
   useEffect(() => {
     const checkConnectionStatus = async () => {
       try {
         const hasToken = await zapier_automation_backend.has_google_token();
         setIsConnected(hasToken);
+        
         if (hasToken) {
           await fetchCalendars();
         }
@@ -26,7 +28,7 @@ const GoogleCalendarPanel = ({ onClose, onConnect, selectedTrigger }) => {
         setError('Failed to check connection status');
       }
     };
-
+    
     checkConnectionStatus();
   }, []);
 
@@ -45,40 +47,50 @@ const GoogleCalendarPanel = ({ onClose, onConnect, selectedTrigger }) => {
     }
   };
 
-  const handleGoogleOAuth = () => {
-  const state = crypto.randomUUID(); // Generate secure random state
-  localStorage.setItem('google_oauth_state', state); // Use localStorage
+  const handleGoogleOAuth = async () => {
+    try {
+      // Generate a secure state token
+      const state = crypto.randomUUID();
+      localStorage.setItem('google_oauth_state', state);
+      
+      // Get auth URL from backend (recommended approach)
+      const authUrl = await zapier_automation_backend.get_google_auth_url(state);
+      
+      // Redirect to Google OAuth
+      window.location.href = authUrl;
+    } catch (err) {
+      console.error('OAuth initiation failed:', err);
+      setError('Failed to start authentication. Please try again.');
+    }
+  };
 
-  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-    `client_id=${CLIENT_ID}` +
-    `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-    `&response_type=code` +
-    `&scope=${encodeURIComponent(SCOPES)}` +
-    `&access_type=offline` +
-    `&prompt=consent` +
-    `&state=${state}`;
-  
-  window.location.href = authUrl;
-};
   const handleConnect = () => {
     if (selectedCalendar && eventType) {
       const triggerData = {
         type: 'google_calendar',
         calendar_id: selectedCalendar,
         event_type: eventType,
-        calendar_name: calendars.find(cal => cal.id === selectedCalendar)?.summary || 'Selected Calendar'
+        calendar_name: calendars.find(cal => cal.id === selectedCalendar)?.summary || 'Selected Calendar',
+        connected: true
       };
       onConnect(triggerData);
       onClose();
     }
   };
 
-  const handleDisconnect = () => {
-    setIsConnected(false);
-    setCalendars([]);
-    setSelectedCalendar('');
-    localStorage.removeItem('google_connected');
-    localStorage.removeItem('google_access_token');
+  const handleDisconnect = async () => {
+    try {
+      setLoading(true);
+      await zapier_automation_backend.revoke_google_token();
+      setIsConnected(false);
+      setCalendars([]);
+      setSelectedCalendar('');
+    } catch (err) {
+      console.error('Disconnect failed:', err);
+      setError('Failed to disconnect. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
