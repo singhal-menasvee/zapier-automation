@@ -1,4 +1,9 @@
 {
+  "bootstrap": {
+    "backend": "classic"
+  },
+
+
   "canisters": {
     "zapier-automation-backend": {
       "candid": "src/zapier-automation-backend/zapier-automation-backend.did",

@@ -40,7 +40,7 @@ const OAuth2Callback = () => {
       try {
         setStatus("Exchanging code for tokens...");
 
-        const tokenResponse = await zapier_automation_backend.exchange_google_code_v2(code);
+        const tokenResponse = await zapier_automation_backend.exchange_google_code_v2(code, state);
 
         if ("ok" in tokenResponse) {
           const token = tokenResponse.ok;

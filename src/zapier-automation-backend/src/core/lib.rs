@@ -5,6 +5,9 @@ use std::collections::HashMap;
 use std::time::Duration;
 use crate::adapters::web2;
 
+const GOOGLE_CLIENT_ID: &str = "548274771061-rpqt1l6i19hucmpar07nis5obr5shm0j.apps.googleusercontent.com";
+const REDIRECT_URI: &str = "http://localhost:3000/OAuth2Callback";
+
 // Store Google tokens for users
 thread_local! {
     static GOOGLE_TOKENS: RefCell<HashMap<String, web2::GoogleTokenResponse>> = RefCell::new(HashMap::new());
@@ -341,20 +344,19 @@ fn run_scheduled_workflows() {
 #[ic_cdk::update]
 #[candid::candid_method(update)]
 #[deprecated = "Use exchange_google_code_v2 instead"]
-pub async fn exchange_google_code_flat(code: String) -> web2::GoogleTokenResponse {
-    exchange_google_code_v2(code).await.expect("Failed to exchange code")
+pub async fn exchange_google_code_flat(code: String, state: String) -> web2::GoogleTokenResponse {
+    exchange_google_code_v2(code, state).await.expect("Failed to exchange code")
 }
 
 /// New version with proper error handling
 #[ic_cdk::update]
 #[candid::candid_method(update)]
-pub async fn exchange_google_code_v2(code: String) -> Result<web2::GoogleTokenResponse, String> {
+pub async fn exchange_google_code_v2(code: String, state: String) -> Result<GoogleTokenResponse, String> {
     let token_response = web2::exchange_google_code(code.clone()).await
         .map_err(|e| format!("Failed to exchange code: {}", e))?;
 
-    let user_principal = caller().to_text();
     GOOGLE_TOKENS.with(|tokens| {
-        tokens.borrow_mut().insert(user_principal, token_response.clone());
+        tokens.borrow_mut().insert(state.clone(), token_response.clone());
     });
 
     Ok(GoogleTokenResponse {
@@ -367,26 +369,46 @@ pub async fn exchange_google_code_v2(code: String) -> Result<web2::GoogleTokenRe
     })
 }
 
+
 #[ic_cdk::query]
 #[candid::candid_method(query)]
-pub fn has_google_token() -> bool {
-    let user_principal = caller().to_text();
+pub fn has_google_token(state: String) -> bool {
     GOOGLE_TOKENS.with(|tokens| {
-        tokens.borrow().contains_key(&user_principal)
+        tokens.borrow().contains_key(&state)
     })
 }
 
+
 #[ic_cdk::update]
 #[candid::candid_method(update)]
-pub async fn get_google_calendars() -> Result<Vec<web2::GoogleCalendar>, String> {
-    let user_principal = caller().to_text();
-    
+pub async fn get_google_calendars(state: String) -> Result<Vec<web2::GoogleCalendar>, String> {
     let token = GOOGLE_TOKENS.with(|tokens| {
-        tokens.borrow().get(&user_principal).cloned()
+        tokens.borrow().get(&state).cloned()
     }).ok_or("No Google token found. Please authenticate first.")?;
-    
+
     web2::get_google_calendars_with_token(&token.access_token).await
 }
+
+#[ic_cdk::query]
+#[candid::candid_method(query)]
+pub fn get_google_auth_url(state: String) -> String {
+    let scope = "https://www.googleapis.com/auth/calendar.readonly";
+    format!(
+        "https://accounts.google.com/o/oauth2/v2/auth?\
+         client_id={}&\
+         redirect_uri={}&\
+         response_type=code&\
+         scope={}&\
+         access_type=offline&\
+         state={}&\
+         prompt=consent",
+        GOOGLE_CLIENT_ID,
+        REDIRECT_URI,
+        scope,
+        state
+    )
+}
+
 // Re-export web2 types for Candid
 pub use crate::adapters::web2::{
     GoogleTokenResponse,
