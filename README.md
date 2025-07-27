@@ -1,61 +1,91 @@
-# `zapier-automation`
 
-Welcome to your new `zapier-automation` project and to the Internet Computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.
+# 🔁DecentralFlow: Decentralized Automation Platform on ICP
 
-To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
+Welcome to **Zapier-Automation**, a Web3-native alternative to platforms like Zapier or IFTTT , designed for **event-driven automation between smart contracts, web2 APIs, and personal apps**, powered entirely by the **Internet Computer (ICP)**.
 
-To learn more before you start working with `zapier-automation`, see the following documentation available online:
+## 🧠 What Is This Project?
+Imagine connecting your smart contract, Google Calendar, and Telegram Bot to automate tasks like:
 
-- [Quick Start](https://internetcomputer.org/docs/current/developer-docs/setup/deploy-locally)
-- [SDK Developer Tools](https://internetcomputer.org/docs/current/developer-docs/setup/install)
-- [Rust Canister Development Guide](https://internetcomputer.org/docs/current/developer-docs/backend/rust/)
-- [ic-cdk](https://docs.rs/ic-cdk)
-- [ic-cdk-macros](https://docs.rs/ic-cdk-macros)
-- [Candid Introduction](https://internetcomputer.org/docs/current/developer-docs/backend/candid/)
+- If a new event is added in Google Calendar → call a smart contract method.
+- If a contract emits an event → send a webhook to your app.
+- If a timer triggers → mint an NFT or notify your Discord.
 
-If you want to start working on your project right away, you might want to try the following commands:
+Traditional platforms like **Zapier** rely on centralized infrastructure and often don’t support **on-chain triggers or smart contract workflows**.  
+**Zapier-Automation** is built **entirely on decentralized infrastructure** using **ICP canisters**, meaning:
+
+- No central servers
+- Real HTTPS outcalls from chain
+- Fully composable workflows
+- On-chain logic + off-chain API triggers
+
+## 🏗️ Tech Stack
+
+- 💻 **Frontend**: React + Figma
+- 🔗 **Backend**: Rust Canisters via [dfx](https://internetcomputer.org/docs/current/developer-docs/cli-reference/dfx/)
+- 🔐 **Auth**: NFID (Web3 Identity), Google OAuth2
+- 🔁 **Triggers**: HTTP, Google Calendar, Smart Contract Events, Cron
+- 📦 ICP Ecosystem: `@dfinity/agent`, `ic-cdk`, HTTPS outcalls
+
+## 🚀 Getting Started (Fork & Run Locally)
+
+Follow these steps to fork and run the project on your own machine:
+
+### 1. Clone the Repo
 
 ```bash
-cd zapier-automation/
-dfx help
-dfx canister --help
+git clone https://github.com/singhal-menasvee/zapier-automation.git
+cd zapier-automation
 ```
 
-## Running the project locally
+### 2. Set Up the ICP Environment
+You’ll need the DFINITY SDK (dfx) and Node.js installed.
 
-If you want to test your project locally, you can use the following commands:
-
+Install DFX (Internet Computer SDK):
 ```bash
-# Starts the replica, running in the background
-dfx start --background
+sh -ci "$(curl -fsSL https://smartcontracts.org/install.sh)"
+```
+   ℹ️ After installation, restart your terminal and run dfx --version to verify.
 
-# Deploys your canisters to the replica and generates your candid interface
+###  3. Install Frontend Dependencies
+```bash
+cd src/zapier-automation-frontend
+npm install
+```
+  If you face any ERESOLVE errors, use:
+```bash
+npm install --legacy-peer-deps
+```
+
+### 4. Build Canisters (Rust Backend)
+Go back to project root and run:
+```bash
+dfx start --background
 dfx deploy
 ```
+ This will:
 
-Once the job completes, your application will be available at `http://localhost:4943?canisterId={asset_canister_id}`.
+ -Start the local Internet Computer replica
 
-If you have made changes to your backend canister, you can generate a new candid interface with
+ -Deploy the Rust-based automation engine and event system
 
+### 5. Start the React Frontend
 ```bash
-npm run generate
+cd src/zapier-automation-frontend
+npm run dev
 ```
+ The app will open on: http://localhost:3000
 
-at any time. This is recommended before starting the frontend development server, and will be run automatically any time you run `dfx deploy`.
+## 💡Examples
+Here are some workflows you can create in the UI:
+<img width="779" height="268" alt="image" src="https://github.com/user-attachments/assets/41c07d95-ed37-4566-90f0-cad90363e8ef" />
 
-If you are making frontend changes, you can start a development server with
 
-```bash
-npm start
-```
+### 🙌 Credits
+Built with 💙 by Manasvi Singhal, Shubh Pandey & Ramesh Kumar
+Inspired by the simplicity of Zapier, but reimagined for the decentralized future.
 
-Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 4943.
+### ✨ Want to Contribute?
+If you'd like to help improve trigger sources (Discord, Telegram, Slack, etc.), enhance UI, or add more chain support — open an issue or submit a PR!
 
-### Note on frontend environment variables
+                          🧡 Built on the Internet Computer (ICP) — fully on-chain, fully unstoppable.
 
-If you are hosting frontend code somewhere without using DFX, you may need to make one of the following adjustments to ensure your project does not fetch the root key in production:
-
-- set`DFX_NETWORK` to `ic` if you are using Webpack
-- use your own preferred method to replace `process.env.DFX_NETWORK` in the autogenerated declarations
-  - Setting `canisters -> {asset_canister_id} -> declarations -> env_override to a string` in `dfx.json` will replace `process.env.DFX_NETWORK` with the string in the autogenerated declarations
-- Write your own `createActor` constructor
