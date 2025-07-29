@@ -1,339 +1,148 @@
-use candid::{CandidType, Deserialize};
-use ic_cdk::caller;
-use std::cell::RefCell;
+use ic_cdk_macros::*;
+use ic_cdk::export_candid;
+use candid::CandidType;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::time::Duration;
-use ic_cdk::api::time;
 
-// Define Trigger Types
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub enum Trigger {
-    ContractEvent {
-        contract_address: String,
-        event_name: String,
-        poll_interval_sec: u64,
-    },
-    HttpRequest {
-        url: String,
-        method: String,
-    },
-    TimeBased {
-        cron: String,
-    },
+use ic_cdk::api::management_canister::http_request::{
+    http_request as call_http_request_func,
+    CanisterHttpRequestArgument,
+    HttpMethod,
+    HttpHeader,
+    HttpResponse,
+};
+
+// === Query Example ===
+
+#[derive(CandidType, Serialize, Deserialize)]
+struct MyResponse {
+    message: String,
 }
 
-// Define Action Types
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub enum Action {
-    SendHttpRequest {
-        url: String,
-        method: String,
-        body: String,
-    },
-    NotifyUser {
-        user_id: String,
-        message: String,
-    },
-    ExecuteContractMethod {
-        contract_address: String,
-        method: String,
-        args: Vec<String>,
-    },
-    MintNft {
-    to_principal: String,
-    metadata: String,
-},
- UpdateCanisterState {
-        canister_id: String,
-        state_key: String,
-        state_value: String,
-    },
-
+#[query]
+fn get_message() -> MyResponse {
+    MyResponse {
+        message: "Hello from Internet Computer!".to_string(),
+    }
 }
 
-// Define Condition Structure
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct Condition {
-    pub field: String,
-    pub operator: String,
-    pub value: String,
+// === Data Structures ===
+
+#[derive(Debug, Serialize, Deserialize, CandidType)]
+pub struct GoogleTokenResponse {
+    pub access_token: String,
+    pub expires_in: u32,
+    pub refresh_token: Option<String>,
+    pub scope: String,
+    pub token_type: String,
+    pub id_token: Option<String>,
 }
 
-// Define Workflow Status
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub enum WorkflowStatus {
-    Active,
-    Paused,
-    Disabled,
-}
-
-// Define Workflow Structure
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct Workflow {
+#[derive(Debug, Serialize, Deserialize, CandidType)]
+pub struct GoogleUserInfo {
     pub id: String,
+    pub email: String,
+    pub verified_email: bool,
     pub name: String,
-    pub trigger: Trigger,
-    pub actions: Vec<Action>,
-    pub conditions: Option<Vec<Condition>>,
-    pub status: WorkflowStatus,
-    pub owner: String,
-    pub created_at: u64,
-    pub updated_at: u64,
+    pub given_name: String,
+    pub family_name: String,
+    pub picture: String,
+    pub locale: String,
 }
 
-// Define Input Structure for Creating Workflows
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct WorkflowInput {
-    pub name: String,
-    pub trigger: Trigger,
-    pub actions: Vec<Action>,
-    pub conditions: Option<Vec<Condition>>,
-}
+// === Update Method ===
 
-// Store Workflows in a HashMap
-thread_local! {
-    static WORKFLOW_STORE: RefCell<HashMap<String, Workflow>> = RefCell::new(HashMap::new());
-}
+#[update]
+async fn exchange_google_auth_code(auth_code: String) -> Result<String, String> {
+    let client_id = std::env::var("GOOGLE_CLIENT_ID")
+        .map_err(|e| format!("GOOGLE_CLIENT_ID not found: {}", e))?;
+    let client_secret = std::env::var("GOOGLE_CLIENT_SECRET")
+        .map_err(|e| format!("GOOGLE_CLIENT_SECRET not found: {}", e))?;
+    let redirect_uri = std::env::var("GOOGLE_REDIRECT_URI")
+        .map_err(|e| format!("GOOGLE_REDIRECT_URI not found: {}", e))?;
 
-// Generate Unique Workflow ID
-fn generate_id() -> String {
-    format!("{}-{}", time(), caller().to_text())
-}
+    let token_endpoint = "https://oauth2.googleapis.com/token";
 
-// Create a New Workflow
-#[ic_cdk::update]
-fn create_workflow(input: WorkflowInput) -> String {
-    let id = generate_id();
-    let now = time();
+    let mut params = HashMap::new();
+    params.insert("code", auth_code);
+    params.insert("client_id", client_id);
+    params.insert("client_secret", client_secret);
+    params.insert("redirect_uri", redirect_uri);
+    params.insert("grant_type", "authorization_code".to_string());
 
-    let workflow = Workflow {
-        id: id.clone(),
-        name: input.name,
-        trigger: input.trigger,
-        actions: input.actions,
-        conditions: input.conditions,
-        status: WorkflowStatus::Active,
-        owner: caller().to_text(),
-        created_at: now,
-        updated_at: now,
+    let request_body = serde_urlencoded::to_string(&params)
+        .map_err(|e| format!("Failed to encode request body: {}", e))?;
+
+    let request_headers = vec![
+        HttpHeader {
+            name: "Content-Type".to_string(),
+            value: "application/x-www-form-urlencoded".to_string(),
+        },
+        HttpHeader {
+            name: "Accept".to_string(),
+            value: "application/json".to_string(),
+        },
+    ];
+
+    let cycles = 10_000_000_000;
+
+    let token_request_arg = CanisterHttpRequestArgument {
+        url: token_endpoint.to_string(),
+        method: HttpMethod::POST,
+        headers: request_headers,
+        body: Some(request_body.as_bytes().to_vec()),
+        transform: None,
+        max_response_bytes: None,
     };
 
-    WORKFLOW_STORE.with(|store| {
-        store.borrow_mut().insert(id.clone(), workflow);
-    });
+    let (token_response_result,) =
+        call_http_request_func(token_request_arg, cycles)
+            .await
+            .map_err(|e| format!("HTTPS outcall failed: {:?}", e))?;
 
-    id
-}
+    let response_str = String::from_utf8(token_response_result.body)
+        .map_err(|e| format!("Failed to parse response as UTF-8: {}", e))?;
 
-// List All Workflows
-#[ic_cdk::query]
-fn list_workflows() -> Vec<Workflow> {
-    WORKFLOW_STORE.with(|store| {
-        store.borrow().values().cloned().collect()
-    })
-}
+    let token_response: GoogleTokenResponse = serde_json::from_str(&response_str)
+        .map_err(|e| format!("Failed to parse Google token response JSON: {}", e))?;
 
-// Get a Specific Workflow by ID
-#[ic_cdk::query]
-fn get_workflow(id: String) -> Option<Workflow> {
-    WORKFLOW_STORE.with(|store| {
-        store.borrow().get(&id).cloned()
-    })
-}
+    // === Fetch User Info ===
 
-// Update Workflow Status
-#[ic_cdk::update]
-fn update_workflow_status(id: String, status: WorkflowStatus) -> Result<(), String> {
-    WORKFLOW_STORE.with(|store| {
-        let mut store = store.borrow_mut();
-        if let Some(workflow) = store.get_mut(&id) {
-            if workflow.owner != caller().to_text() {
-                return Err("Not authorized".to_string());
-            }
-            workflow.status = status;
-            workflow.updated_at = time();
-            Ok(())
-        } else {
-            Err("Workflow not found".to_string())
-        }
-    })
-}
+    let userinfo_endpoint = "https://www.googleapis.com/oauth2/v2/userinfo";
+    let userinfo_headers = vec![
+        HttpHeader {
+            name: "Authorization".to_string(),
+            value: format!("Bearer {}", token_response.access_token),
+        },
+        HttpHeader {
+            name: "Accept".to_string(),
+            value: "application/json".to_string(),
+        },
+    ];
 
-// Delete a Workflow
-#[ic_cdk::update]
-fn delete_workflow(id: String) -> Result<(), String> {
-    WORKFLOW_STORE.with(|store| {
-        let mut store = store.borrow_mut();
-        if let Some(workflow) = store.get(&id) {
-            if workflow.owner != caller().to_text() {
-                return Err("Not authorized".to_string());
-            }
-            store.remove(&id);
-            Ok(())
-        } else {
-            Err("Workflow not found".to_string())
-        }
-    })
-}
-
-// Define Workflow Logging Structure
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct WorkflowLog {
-    pub timestamp: u64,
-    pub message: String,
-}
-
-// Store Workflow Logs
-thread_local! {
-    static WORKFLOW_LOGS: RefCell<HashMap<String, Vec<WorkflowLog>>> = RefCell::new(HashMap::new());
-}
-
-// Log Workflow Events
-#[ic_cdk::update]
-fn log_workflow_event(workflow_id: String, message: String) {
-    let log = WorkflowLog {
-        timestamp: time(),
-        message,
+    let userinfo_request_arg = CanisterHttpRequestArgument {
+        url: userinfo_endpoint.to_string(),
+        method: HttpMethod::GET,
+        headers: userinfo_headers,
+        body: None,
+        transform: None,
+        max_response_bytes: None,
     };
 
-    WORKFLOW_LOGS.with(|logs| {
-        logs.borrow_mut()
-            .entry(workflow_id)
-            .or_insert_with(Vec::new)
-            .push(log);
-    });
+    let (userinfo_response_result,) =
+        call_http_request_func(userinfo_request_arg, cycles)
+            .await
+            .map_err(|e| format!("User info HTTPS outcall failed: {:?}", e))?;
+
+    let userinfo_str = String::from_utf8(userinfo_response_result.body)
+        .map_err(|e| format!("Failed to parse user info response as UTF-8: {}", e))?;
+
+    let user_info: GoogleUserInfo = serde_json::from_str(&userinfo_str)
+        .map_err(|e| format!("Failed to parse Google user info JSON: {}", e))?;
+
+    Ok(format!("Successfully authenticated Google user: {}", user_info.email))
 }
 
-// Retrieve Workflow Logs
-#[ic_cdk::query]
-fn get_workflow_logs(workflow_id: String) -> Vec<WorkflowLog> {
-    WORKFLOW_LOGS.with(|logs| {
-        logs.borrow()
-            .get(&workflow_id)
-            .cloned()
-            .unwrap_or_default()
-    })
-}
+// === Export Candid Interface ===
 
-// Execute Workflow Based on Triggers & Actions
-#[ic_cdk::update]
-fn execute_workflow(id: String) -> Result<(), String> {
-    WORKFLOW_STORE.with(|store| {
-        let mut store = store.borrow_mut();
-        if let Some(workflow) = store.get_mut(&id) {
-            ic_cdk::print(format!("Executing workflow: {}", workflow.name));
-
-            match &workflow.trigger {
-                Trigger::TimeBased { cron } => {
-                    ic_cdk::print(format!("Triggering workflow at schedule: {}", cron));
-                }
-                Trigger::HttpRequest { url, method } => {
-                    ic_cdk::print(format!("Triggering workflow via HTTP request: {} {}", method, url));
-                }
-                Trigger::ContractEvent {
-                    contract_address,
-                    event_name,
-                    poll_interval_sec,
-                } => {
-                    ic_cdk::print(format!(
-                        "Triggering workflow for contract {} event '{}' every {} seconds",
-                        contract_address, event_name, poll_interval_sec
-                    ));
-                }
-            }
-
-            for action in &workflow.actions {
-                match action {
-                    Action::NotifyUser { user_id, message } => {
-                        ic_cdk::print(format!("Sending notification to {}: {}", user_id, message));
-                    }
-                    Action::SendHttpRequest { url, method, body } => {
-                        ic_cdk::print(format!(
-                            "Sending request to {} via {} with body {}",
-                            url, method, body
-                        ));
-                    }
-                    Action::ExecuteContractMethod {
-                        contract_address,
-                        method,
-                        args,
-                    } => {
-                        ic_cdk::print(format!(
-                            "Executing contract method '{}' on {} with args {:?}",
-                            method, contract_address, args
-                        ));
-                    }
-                    Action::MintNft {
-                        to_principal,
-                        metadata,
-                    } => {
-                        ic_cdk::print(format!(
-                            "Minting NFT to {} with metadata: {}",
-                            to_principal, metadata
-                        ));
-                        // TODO: Call NFT canister mint method via inter-canister call
-                    }
-                    Action::UpdateCanisterState {
-                        canister_id,
-                        state_key,
-                        state_value,
-                    } => {
-                        ic_cdk::print(format!(
-                            "Updating canister {} state: {} = {}",
-                            canister_id, state_key, state_value
-                        ));
-                        // TODO: Call method on target canister
-                    }
-                }
-            }
-
-            log_workflow_event(id.clone(), format!("Workflow '{}' executed successfully", workflow.name));
-            Ok(())
-        } else {
-            Err("Workflow not found".to_string())
-        }
-    })
-}
-
-
-// Automatically Run Scheduled Workflows
-#[ic_cdk::update]
-fn run_scheduled_workflows() {
-    WORKFLOW_STORE.with(|store| {
-        let store = store.borrow();
-
-        for workflow in store.values() {
-            if let Trigger::TimeBased { cron } = &workflow.trigger {
-                ic_cdk::print(format!(
-                    "Checking scheduled workflow: {} at {}",
-                    workflow.name, cron
-                ));
-                let id = workflow.id.clone();
-                // Trigger the workflow
-                execute_workflow(id).ok();
-            }
-
-            if let Trigger::ContractEvent {
-                contract_address,
-                event_name,
-                poll_interval_sec,
-            } = &workflow.trigger
-            {
-                ic_cdk::print(format!(
-                    "Polling event '{}' on {} every {}s",
-                    event_name, contract_address, poll_interval_sec
-                ));
-                // TODO: Poll external data source
-            }
-        }
-    });
-}
-
-
-// Schedule periodic execution
-#[ic_cdk::init]
-fn schedule_recurring_execution() {
-    ic_cdk_timers::set_timer_interval(Duration::from_secs(600), || {
-        run_scheduled_workflows();
-    });
-}
+export_candid!();

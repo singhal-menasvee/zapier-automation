@@ -1,0 +1,61 @@
+{
+  "canisters": {
+    "zapier-automation-backend": {
+      "type": "rust",
+      "args": [],
+      "declarations": {
+        "output": "src/declarations/zapier-automation-backend"
+      },
+      "candid": "src/zapier-automation-backend/zapier-automation-backend.did",
+      "wasm": "src/zapier-automation-backend/target/wasm32-unknown-unknown/release/zapier_automation_backend_opt.wasm",
+      "build": [
+        "cargo build --target wasm32-unknown-unknown --release",
+        "candid-extractor src/zapier-automation-backend/src/lib.rs > src/zapier-automation-backend/zapier-automation-backend.did"
+      ],
+      "capabilities": {
+        "http_request": true,
+        "global_timer": false
+      },
+      "package": "zapier-automation-backend",  
+      "workspace": "zapier-automation-backend" 
+    },
+    "zapier-automation-frontend": {
+      "type": "assets",
+      "source": [
+        "src/zapier-automation-frontend/dist",
+        "src/zapier-automation-frontend/assets",
+        "src/zapier-automation-frontend/src/.dfx-assets"
+      ],
+      "dependencies": [
+        "zapier-automation-backend",
+        "internet_identity"
+      ]
+    },
+    "internet_identity": {
+      "type": "custom",
+      "candid": "internet_identity.did",
+      "wasm": "internet_identity.wasm",
+      "build": "npx --yes dfinity-sdk deploy-internet-identity --no-asset-canister ${DFX_NETWORK:-local}",
+      "remote": {
+        "candid": "internet_identity.did",
+        "id": {
+          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+        }
+      }
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": ""
+    }
+  },
+  "version": 1,
+  "output_env_file": ".env",
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    }
+  },
+  "dfx": "0.18.0"
+}

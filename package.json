@@ -4,7 +4,6 @@
   "description": "DFINITY Internet Computer project for Zapier-like automation.",
   "keywords": [
     "Internet Computer",
-    "Motoko",
     "Rust",
     "React",
     "Bootstrap",
@@ -22,16 +21,19 @@
     "deploy:frontend": "dfx deploy zapier-automation-frontend",
     "deploy:backend": "dfx deploy zapier-automation-backend",
     "generate": "dfx generate",
-    "build:frontend": "npm run build --workspace zapier-automation-frontend",
-    "build:backend": "npm run build --workspace zapier-automation-backend",
-    "build": "npm run build:backend && npm run build:frontend",
-    "test": "npm test --workspaces"
+    "build:frontend": "cd src/zapier-automation-frontend && npm run build",
+    "build": "npm run build:frontend",
+    "test": "npm test"
   },
   "workspaces": [
-    "src/zapier-automation-frontend",
-    "src/zapier-automation-backend"
+    "src/zapier-automation-frontend"
   ],
   "devDependencies": {
+    "@types/node": "^24.1.0",
     "cross-env": "^7.0.3"
+  },
+  "dependencies": {
+    "@dfinity/agent": "^3.1.0",
+    "@dfinity/candid": "^3.1.0"
   }
 }

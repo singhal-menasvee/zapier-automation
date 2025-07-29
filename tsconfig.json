@@ -6,15 +6,17 @@
     "strictPropertyInitialization": false,
     "moduleResolution": "node",
     "allowJs": true,
-    "outDir": "HACK_BECAUSE_OF_ALLOW_JS",
+    "outDir": "HACK_BECAUSE_OF_ALLOW_JS", // ✅ Temporary workaround due to allowJs
     "esModuleInterop": true,
+    "resolveJsonModule": true,            // ✅ Allows importing JSON files
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "types": []
   },
-  "include": ["src"],   // ✅ Only include your app's source folder
   "exclude": [
-    "node_modules",      // ✅ Always exclude this
-    "postcss.config.*",  // ✅ Exclude stale configs
-    "tailwind.config.*"
+    "node_modules",         // ✅ Always exclude this
+    "postcss.config.*",     // ✅ Exclude stale configs
+    "tailwind.config.*",
+    "**/estree"
   ]
 }
