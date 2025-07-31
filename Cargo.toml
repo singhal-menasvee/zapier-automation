@@ -1,5 +1,16 @@
+[package]
+name = "zapier-automation-workspace"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Minimal build target to satisfy Cargo
+[[bin]]
+name = "dummy"
+path = "dummy.rs"  # We'll create this empty file
+
 [workspace]
-members = [
-    "src/zapier-automation-backend"
-]
-resolver = "2"
+members = ["src/zapier-automation-backend"]
+
+[replace]
+"candid:0.10.16" = { package = "candid", version = "0.9.11" }

@@ -3,12 +3,13 @@ name = "zapier-automation-backend"
 version = "0.1.0"
 edition = "2021"
 
+
 [lib]
 crate-type = ["cdylib"]
 path = "src/lib.rs"
 
 [dependencies]
-candid = "0.10.14"
+candid = { version = "=0.9.11", package = "candid" }  
 ic-cdk = "0.17.2"
 ic-cdk-macros = "0.17.2"
 ic-cdk-timers = "0.6.0"
@@ -17,3 +18,14 @@ serde_json = "1.0"
 thiserror = "1.0"  # For better error handling
 async-trait = "0.1"  # If using async traits
 urlencoding = "2.1.2"
+
+
+
+
+
+
+
+
+
+
+

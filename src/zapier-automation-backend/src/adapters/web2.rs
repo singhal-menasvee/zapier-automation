@@ -1,3 +1,5 @@
+use std::result::Result;
+
 use ic_cdk::api::management_canister::http_request::{
     CanisterHttpRequestArgument, HttpHeader, HttpMethod,
 };
@@ -47,27 +49,26 @@ let body = format!(
 );
 
 
-    let request = CanisterHttpRequestArgument {
-        url: GOOGLE_TOKEN_URL.to_string(),
-        method: HttpMethod::POST,
-        headers: vec![
-            HttpHeader {
-                name: "Content-Type".to_string(),
-                value: "application/x-www-form-urlencoded".to_string(),
-            },
-            HttpHeader {
-                name: "Accept".to_string(),
-                value: "application/json".to_string(),
-            },
-        ],
-        body: Some(body.into_bytes()),
-        max_response_bytes: MAX_RESPONSE_BYTES,
-        transform: None,
-    };
-
-   #[cfg(debug_assertions)]
+    #[cfg(debug_assertions)]
 println!("🔄 Request body: {}", body);
 
+let request = CanisterHttpRequestArgument {
+    url: GOOGLE_TOKEN_URL.to_string(),
+    method: HttpMethod::POST,
+    headers: vec![
+        HttpHeader {
+            name: "Content-Type".to_string(),
+            value: "application/x-www-form-urlencoded".to_string(),
+        },
+        HttpHeader {
+            name: "Accept".to_string(),
+            value: "application/json".to_string(),
+        },
+    ],
+    body: Some(body.into_bytes()),
+    max_response_bytes: MAX_RESPONSE_BYTES,
+    transform: None,
+};
 
     let (response,) = ic_cdk::api::management_canister::http_request::http_request(request, CYCLES)
         .await
@@ -124,6 +125,7 @@ pub async fn get_google_calendars_with_token(access_token: &str) -> Result<Vec<G
     Ok(calendars.items)
 }
 
+#[allow(dead_code)]
 fn validate_token_response(token: &GoogleTokenResponse) -> Result<(), String> {
     if token.access_token.is_empty() {
         return Err("Empty access token".to_string());

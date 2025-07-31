@@ -101,9 +101,9 @@ service : {
   exchange_google_code_flat : (text) -> (GoogleTokenResponse);
 
   get_google_auth_url: (text) -> (text) query;
-  exchange_google_code_v2: (text, text) -> (Result) update;
+  exchange_google_code_v2: (text, text) -> (Result);
   has_google_token: (text) -> (bool) query;
-  get_google_calendars: (text) -> (Result) update;
+  get_google_calendars: (text) -> (Result);
 
   execute_workflow : (text) -> (variant { ok : null; err : text });
 
