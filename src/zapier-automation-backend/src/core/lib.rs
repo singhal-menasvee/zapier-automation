@@ -301,7 +301,6 @@ pub fn run_scheduled_workflows() {
 #[ic_cdk::update]
 #[candid::candid_method(update)]
 #[deprecated = "Use exchange_google_code_v2 instead"]
-#[allow(deprecated)]
 pub async fn exchange_google_code_flat(code: String, state: String) -> web2::GoogleTokenResponse {
     exchange_google_code_v2(code, state).await.expect("Failed to exchange code")
 }
@@ -358,12 +357,6 @@ pub fn schedule_recurring_execution() {
     });
 }
 
-#[ic_cdk::query(name = "__get_candid_interface_tmp_hack")]
-fn export_candid() -> String {
-    use candid::export_service;
-    #[allow(deprecated)]
-    export_service!();
-    __export_service()
-}
+
 
 pub use crate::adapters::web2::{GoogleTokenResponse, GoogleCalendar};
