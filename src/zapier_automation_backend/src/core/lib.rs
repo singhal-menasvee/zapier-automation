@@ -6,7 +6,7 @@ use std::time::Duration;
 use crate::adapters::web2;
 
 // Explicit Result type for Candid compatibility
-pub type Result<T, E = String> = std::result::Result<T, E>;
+use std::result::Result;
 
 const GOOGLE_CLIENT_ID: &str = "548274771061-rpqt1l6i19hucmpar07nis5obr5shm0j.apps.googleusercontent.com";
 const REDIRECT_URI: &str = "http://localhost:3000/OAuth2Callback";
@@ -300,7 +300,6 @@ pub fn run_scheduled_workflows() {
 
 #[ic_cdk::update]
 #[candid::candid_method(update)]
-#[deprecated = "Use exchange_google_code_v2 instead"]
 pub async fn exchange_google_code_flat(code: String, state: String) -> web2::GoogleTokenResponse {
     exchange_google_code_v2(code, state).await.expect("Failed to exchange code")
 }

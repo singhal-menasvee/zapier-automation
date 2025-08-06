@@ -1,27 +1,23 @@
 {
-  "bootstrap": {
-    "backend": "classic"
-  },
+  
 
 
   "canisters": {
-    "zapier-automation-backend": {
-      "candid": "src/zapier-automation-backend/zapier-automation-backend.did",
-      "package": "zapier-automation-backend",
-      "type": "rust",
-      "rust": {
-        "optimization_level": "O3"
-      }
+    "zapier_automation_backend": {
+      "candid": "src/zapier_automation_backend/zapier_automation_backend.did",
+      "package": "zapier_automation_backend",
+      "type": "rust"
+      
     },
-    "zapier-automation-frontend": {
+    "zapier_automation_frontend": {
       "dependencies": [
-        "zapier-automation-backend"
+        "zapier_automation_backend"
       ],
       "source": [
-        "src/zapier-automation-frontend/dist"
+        "src/zapier_automation_frontend/dist"
       ],
       "type": "assets",
-      "workspace": "zapier-automation-frontend"
+      "workspace": "zapier_automation_frontend"
     }
   },
   "defaults": {

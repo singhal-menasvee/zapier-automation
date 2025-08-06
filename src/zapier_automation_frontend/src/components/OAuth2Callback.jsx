@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { zapier_automation_backend } from "declarations/zapier-automation-backend";
+import { zapier_automation_backend } from "declarations/zapier_automation_backend";
 
 const OAuth2Callback = () => {
   const navigate = useNavigate();

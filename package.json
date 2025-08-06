@@ -13,7 +13,7 @@
   },
   "type": "module",
   "workspaces": [
-    "src/zapier-automation-frontend"
+    "src/zapier_automation_frontend"
   ],
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.8"
