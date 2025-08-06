@@ -1,10 +1,10 @@
 {
-  "name": "zapier-automation-frontend",
+  "name": "zapier_automation_frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "setup": "npm i && dfx canister create zapier-automation-backend && dfx generate zapier-automation-backend && dfx deploy",
+    "setup": "npm i && dfx canister create zapier_automation_backend && dfx generate zapier_automation_backend && dfx deploy",
     "dev": "vite",
     "start": "vite --port 3000",
     "prebuild": "dfx generate",

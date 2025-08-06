@@ -1,5 +1,5 @@
 [workspace]
 members = [
-    "src/zapier-automation-backend"
+    "src/zapier_automation_backend"
 ]
 resolver = "2"

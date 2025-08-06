@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { zapier_automation_backend } from 'declarations/zapier-automation-backend';
+import { zapier_automation_backend } from 'declarations/zapier_automation_backend';
 import TopBar from './TopBar/TopBar';
 import LeftSidebar from './Sidebar/LeftSidebar';
 import MainPanel from './MainPanel/MainPanel';

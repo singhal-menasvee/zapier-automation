@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { zapier_automation_backend } from "declarations/zapier-automation-backend";
+import { zapier_automation_backend } from "declarations/zapier_automation_backend";
 
 const CLIENT_ID = '548274771061-rpqt1l6i19hucmpar07nis5obr5shm0j.apps.googleusercontent.com';
 const REDIRECT_URI = `${window.location.origin}/OAuth2Callback`;
