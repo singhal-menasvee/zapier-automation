@@ -4,7 +4,6 @@ import { zapier_automation_backend } from 'declarations/zapier_automation_backen
 import TopBar from './TopBar/TopBar';
 import LeftSidebar from './Sidebar/LeftSidebar';
 import MainPanel from './MainPanel/MainPanel';
-import WorkflowNode from './WorkflowNode/WorkflowNode';
 import NodeConfigPanel from './NodeConfigPanel/NodeConfigPanel';
 import './Canvas.css';
 
@@ -19,7 +18,8 @@ const Canvas = () => {
   const checkBackendConnection = async (retries = 3) => {
     for (let i = 0; i < retries; i++) {
       try {
-        return await zapier_automation_backend.has_google_token();
+        // Always pass a string as required by your .did interface
+        return await zapier_automation_backend.has_google_token("");
       } catch (err) {
         console.log(`Backend check attempt ${i + 1} failed:`, err);
         if (i === retries - 1) throw err;
@@ -34,29 +34,27 @@ const Canvas = () => {
         const urlParams = new URLSearchParams(location.search);
         const googleConnected = urlParams.get('google_connected') === 'true';
         const error = urlParams.get('error');
-        
+
         if (error) {
           const errorMessage = error.replace(/_/g, ' ');
           console.error('OAuth error:', errorMessage);
           alert(`OAuth Error: ${errorMessage}`);
         }
-        
+
         // Check both URL params and backend state
         let isConnected = googleConnected;
-        
+
         // Only check backend if we didn't get a positive from URL params
         if (!isConnected) {
           try {
-            // Use the new retry function instead of direct call
             isConnected = await checkBackendConnection();
           } catch (backendError) {
             console.error('Error checking backend connection after retries:', backendError);
-            // Continue with false value if backend check fails
           }
         }
-        
+
         setIsGoogleConnected(isConnected);
-        
+
         // Update trigger connection status if needed
         if (isConnected && selectedTrigger?.type === 'google_calendar') {
           setSelectedTrigger(prev => ({
@@ -80,19 +78,14 @@ const Canvas = () => {
     checkConnection();
   }, [location.search, selectedTrigger]);
 
-  const handleAppSelect = (app) => {
-    setSelectedApp(app);
-  };
+  const handleAppSelect = (app) => setSelectedApp(app);
 
-  const handleClosePanel = () => {
-    setSelectedApp(null);
-  };
+  const handleClosePanel = () => setSelectedApp(null);
 
   const handleTriggerSelect = async (triggerData) => {
     setSelectedTrigger(triggerData);
     if (triggerData?.type === 'google_calendar') {
       try {
-        // Use retry logic here too
         const isConnected = await checkBackendConnection();
         setIsGoogleConnected(isConnected);
         if (isConnected) {

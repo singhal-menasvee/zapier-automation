@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { zapier_automation_backend } from "declarations/zapier_automation_backend";
 
-const CLIENT_ID = '548274771061-rpqt1l6i19hucmpar07nis5obr5shm0j.apps.googleusercontent.com';
-const REDIRECT_URI = `${window.location.origin}/OAuth2Callback`;
-const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
-
 const GoogleCalendarPanel = ({ onClose, onConnect, selectedTrigger }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [calendars, setCalendars] = useState([]);
@@ -17,9 +13,9 @@ const GoogleCalendarPanel = ({ onClose, onConnect, selectedTrigger }) => {
   useEffect(() => {
     const checkConnectionStatus = async () => {
       try {
-        const hasToken = await zapier_automation_backend.has_google_token();
+        const hasToken = await zapier_automation_backend.has_google_token("");
         setIsConnected(hasToken);
-        
+
         if (hasToken) {
           await fetchCalendars();
         }
@@ -28,7 +24,6 @@ const GoogleCalendarPanel = ({ onClose, onConnect, selectedTrigger }) => {
         setError('Failed to check connection status');
       }
     };
-    
     checkConnectionStatus();
   }, []);
 
@@ -48,25 +43,30 @@ const GoogleCalendarPanel = ({ onClose, onConnect, selectedTrigger }) => {
   };
 
   const handleGoogleOAuth = async () => {
-  try {
-    setLoading(true);
-    setError('');
-    
-    // Generate a secure state token
-    const state = crypto.randomUUID();
-    localStorage.setItem('google_oauth_state', state);
-    
-    // Get auth URL from backend
-    const authUrl = await zapier_automation_backend.get_google_auth_url(state);
-    
-    // Redirect to Google OAuth
-    window.location.href = authUrl;
-  } catch (err) {
-    console.error('OAuth initiation failed:', err);
-    setError('Failed to start authentication. Please try again.');
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+      setError('');
+
+      // Generate a secure state token
+      const state = crypto.randomUUID();
+      localStorage.setItem('google_oauth_state', state);
+
+      // For debugging (remove in production)
+      console.log('Generated OAuth state:', state);
+      console.log('Saved OAuth state in localStorage:', localStorage.getItem('google_oauth_state'));
+
+      // Get auth URL from backend
+      const authUrl = await zapier_automation_backend.get_google_auth_url(state);
+
+      // Redirect to Google OAuth
+      window.location.href = authUrl;
+    } catch (err) {
+      console.error('OAuth initiation failed:', err);
+      setError('Failed to start authentication. Please try again.');
+      setLoading(false);
+    }
+  };
+
   const handleConnect = () => {
     if (selectedCalendar && eventType) {
       const triggerData = {

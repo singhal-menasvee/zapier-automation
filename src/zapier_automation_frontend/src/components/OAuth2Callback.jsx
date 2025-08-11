@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { zapier_automation_backend } from "declarations/zapier_automation_backend";
+import { v4 as uuidv4 } from 'uuid'; // Or any other UUID generator
 
 const OAuth2Callback = () => {
   const navigate = useNavigate();

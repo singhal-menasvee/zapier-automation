@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard/Dashboard';
 import Canvas from './components/Canvas/Canvas';
 import { AuthClient } from '@dfinity/auth-client';
 import OAuth2Callback from './components/OAuth2Callback';
+import { H } from 'highlight.run';
 import './App.css';
 
 const AppContent = () => {
@@ -21,6 +22,20 @@ const AppContent = () => {
   const [principal, setPrincipal] = useState(null);
 
   useEffect(() => {
+    H.init('qe9845od', {
+	serviceName: "frontend-app",
+	tracingOrigins: true,
+	networkRecording: {
+		enabled: true,
+		recordHeadersAndBody: true,
+		urlBlocklist: [
+			// insert full or partial urls that you don't want to record here
+			// Out of the box, Highlight will not record these URLs (they can be safely removed):
+			"https://www.googleapis.com/identitytoolkit",
+			"https://securetoken.googleapis.com",
+		],
+	},
+});
     const initAuth = async () => {
       const client = await AuthClient.create();
       setAuthClient(client);
@@ -34,16 +49,23 @@ const AppContent = () => {
   }, []);
 
   const login = async () => {
-    if (!authClient) return;
-    await authClient.login({
-      onSuccess: () => {
-        setIsAuthenticated(true);
-        setPrincipal(authClient.getIdentity().getPrincipal().toText());
-        navigate('/dashboard'); // Redirect after login
-      },
-      identityProvider: 'https://identity.ic0.app/#authorize',
-    });
-  };
+  if (!authClient) return;
+  await authClient.login({
+    onSuccess: () => {
+      setIsAuthenticated(true);
+      const userPrincipal = authClient.getIdentity().getPrincipal().toText();
+      setPrincipal(userPrincipal);
+      // Identify the user with Highlight
+      H.identify(userPrincipal, {
+        principal: userPrincipal,
+        // Add more user info here if available
+      });
+      navigate('/dashboard'); // Redirect after login
+    },
+    identityProvider: 'https://identity.ic0.app/#authorize',
+  });
+};
+
 
   const logout = async () => {
     if (!authClient) return;
@@ -63,6 +85,8 @@ const AppContent = () => {
     onLogout={logout}
   />
 )}
+
+
 
       <main>
         <Routes>
@@ -86,6 +110,7 @@ const AppContent = () => {
         </Routes>
       </main>
       {!hideLayout && <Footer />}
+      
 
     </div>
   );

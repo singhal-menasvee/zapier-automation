@@ -1,9 +1,8 @@
-// NodeConfigPanel.jsx
 import React from 'react';
 import GoogleCalendarPanel from '../GoogleCalendarPanel';
 import './NodeConfigPanel.css';
 
-const NodeConfigPanel = ({ app, onClose }) => {
+const NodeConfigPanel = ({ app, onClose, onConnect, selectedTrigger, isGoogleConnected, onTriggerDisconnect }) => {
   if (!app) return null;
 
   return (
@@ -46,6 +45,10 @@ const NodeConfigPanel = ({ app, onClose }) => {
             <div className="google-panel">
               <GoogleCalendarPanel  
                 onClose={onClose}
+                onConnect={onConnect}
+                selectedTrigger={selectedTrigger}
+                isGoogleConnected={isGoogleConnected}
+                onTriggerDisconnect={onTriggerDisconnect}
               />
             </div>
           )}
