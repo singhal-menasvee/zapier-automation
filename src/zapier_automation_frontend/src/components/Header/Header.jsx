@@ -6,7 +6,7 @@ const Header = ({ isAuthenticated, principal, onLogin, onLogout }) => {
     <header className="header">
       <div className="header-container">
         <div className="logo-container">
-          <img src="/assets/logo.png" alt="logo" className="logo-img" />
+          <img src="/logoicp.png" alt="Logo" style={{ height: '40px', marginRight: '8px' }} />
           <span className="logo-text">DecentralFlow</span>
         </div>
         <div className="nav-buttons">

@@ -5,6 +5,7 @@
   },
   "name": "zapier-automation",
   "scripts": {
+    "dev": "vite",
     "build": "npm run build --workspaces --if-present",
     "prebuild": "npm run prebuild --workspaces --if-present",
     "pretest": "npm run prebuild --workspaces --if-present",

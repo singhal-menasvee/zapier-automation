@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import Header from './components/Header/Header';
 import HeroSection from './components/HeroSection/HeroSection';
 import Features from './components/Features/Features';
 import Footer from './components/Footer/Footer';
@@ -16,26 +15,24 @@ const AppContent = () => {
   const navigate = useNavigate();
   const hideLayout = location.pathname === '/dashboard' || location.pathname === '/Canvas';
 
-
   const [authClient, setAuthClient] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [principal, setPrincipal] = useState(null);
 
   useEffect(() => {
     H.init('qe9845od', {
-	serviceName: "frontend-app",
-	tracingOrigins: true,
-	networkRecording: {
-		enabled: true,
-		recordHeadersAndBody: true,
-		urlBlocklist: [
-			// insert full or partial urls that you don't want to record here
-			// Out of the box, Highlight will not record these URLs (they can be safely removed):
-			"https://www.googleapis.com/identitytoolkit",
-			"https://securetoken.googleapis.com",
-		],
-	},
-});
+      serviceName: "frontend-app",
+      tracingOrigins: true,
+      networkRecording: {
+        enabled: true,
+        recordHeadersAndBody: true,
+        urlBlocklist: [
+          "https://www.googleapis.com/identitytoolkit",
+          "https://securetoken.googleapis.com",
+        ],
+      },
+    });
+
     const initAuth = async () => {
       const client = await AuthClient.create();
       setAuthClient(client);
@@ -49,44 +46,81 @@ const AppContent = () => {
   }, []);
 
   const login = async () => {
-  if (!authClient) return;
-  await authClient.login({
-    onSuccess: () => {
-      setIsAuthenticated(true);
-      const userPrincipal = authClient.getIdentity().getPrincipal().toText();
-      setPrincipal(userPrincipal);
-      // Identify the user with Highlight
-      H.identify(userPrincipal, {
-        principal: userPrincipal,
-        // Add more user info here if available
-      });
-      navigate('/dashboard'); // Redirect after login
-    },
-    identityProvider: 'https://identity.ic0.app/#authorize',
-  });
-};
-
+    if (!authClient) return;
+    await authClient.login({
+      onSuccess: () => {
+        setIsAuthenticated(true);
+        const userPrincipal = authClient.getIdentity().getPrincipal().toText();
+        setPrincipal(userPrincipal);
+        H.identify(userPrincipal, { principal: userPrincipal });
+        navigate('/dashboard');
+      },
+      identityProvider: 'https://identity.ic0.app/#authorize',
+    });
+  };
 
   const logout = async () => {
     if (!authClient) return;
     await authClient.logout();
     setIsAuthenticated(false);
     setPrincipal(null);
-    navigate('/'); // Redirect to landing page on logout
+    navigate('/');
   };
 
   return (
     <div className="app">
       {!hideLayout && (
-  <Header
-    isAuthenticated={isAuthenticated}
-    principal={principal}
-    onLogin={login}
-    onLogout={logout}
-  />
-)}
+        <header className="navbar" style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '10px 20px',
+          backgroundColor: '#0d1b2a',
+          color: 'white'
+        }}>
+          {/* Left side: logo + site name */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <img src="/icplogo.png" alt="ICP Logo" style={{ width: '50px', height: 'auto' }} />
+            <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Decentral Flow</h1>
+          </div>
 
-
+          {/* Right side: login/logout */}
+          <div>
+            {isAuthenticated ? (
+              <>
+                <span style={{ marginRight: '10px' }}>{principal}</span>
+                <button
+                  onClick={logout}
+                  style={{
+                    padding: '5px 15px',
+                    backgroundColor: '#1b263b',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={login}
+                style={{
+                  padding: '5px 15px',
+                  backgroundColor: '#1b263b',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer'
+                }}
+              >
+                Login
+              </button>
+            )}
+          </div>
+        </header>
+      )}
 
       <main>
         <Routes>
@@ -99,19 +133,13 @@ const AppContent = () => {
               </>
             }
           />
-          <Route 
-          path="/dashboard" 
-          element={<Dashboard authClient={authClient} />} 
-          />
-          <Route path= "/Canvas"
-          element={<Canvas/>}
-          />
+          <Route path="/dashboard" element={<Dashboard authClient={authClient} />} />
+          <Route path="/Canvas" element={<Canvas />} />
           <Route path="/oauth2callback" element={<OAuth2Callback />} />
         </Routes>
       </main>
-      {!hideLayout && <Footer />}
-      
 
+      {!hideLayout && <Footer />}
     </div>
   );
 };

@@ -81,7 +81,7 @@ Here are some workflows you can create in the UI:
 
 
 ### 🙌 Credits
-Built with 💙 by Manasvi Singhal, Shubh Pandey & Ramesh Kumar
+Built with 💙 by Manasvi Singhal, Dhruv pryag ,Shubh Pandey  Ramesh Kumar 
 Inspired by the simplicity of Zapier, but reimagined for the decentralized future.
 
 ### ✨ Want to Contribute?
