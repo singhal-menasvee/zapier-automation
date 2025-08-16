@@ -11,31 +11,35 @@ import OAuth2Callback from './components/OAuth2Callback';
 import { H } from 'highlight.run';
 import './App.css';
 
+// Main app logic wrapped for Router access
 const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const hideLayout = location.pathname === '/dashboard' || location.pathname === '/Canvas';
 
+  // Hide layout for dashboard/canvas views
+  const hideLayout =
+    location.pathname.toLowerCase() === '/dashboard' ||
+    location.pathname.toLowerCase() === '/canvas';
 
   const [authClient, setAuthClient] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [principal, setPrincipal] = useState(null);
 
+  // Highlight.run initialization for monitoring
   useEffect(() => {
     H.init('qe9845od', {
-	serviceName: "frontend-app",
-	tracingOrigins: true,
-	networkRecording: {
-		enabled: true,
-		recordHeadersAndBody: true,
-		urlBlocklist: [
-			// insert full or partial urls that you don't want to record here
-			// Out of the box, Highlight will not record these URLs (they can be safely removed):
-			"https://www.googleapis.com/identitytoolkit",
-			"https://securetoken.googleapis.com",
-		],
-	},
-});
+      serviceName: "frontend-app",
+      tracingOrigins: true,
+      networkRecording: {
+        enabled: true,
+        recordHeadersAndBody: true,
+        urlBlocklist: [
+          "https://www.googleapis.com/identitytoolkit",
+          "https://securetoken.googleapis.com",
+        ],
+      },
+    });
+    // Initialize Internet Identity authentication
     const initAuth = async () => {
       const client = await AuthClient.create();
       setAuthClient(client);
@@ -48,25 +52,24 @@ const AppContent = () => {
     initAuth();
   }, []);
 
+  // Login handler
   const login = async () => {
-  if (!authClient) return;
-  await authClient.login({
-    onSuccess: () => {
-      setIsAuthenticated(true);
-      const userPrincipal = authClient.getIdentity().getPrincipal().toText();
-      setPrincipal(userPrincipal);
-      // Identify the user with Highlight
-      H.identify(userPrincipal, {
-        principal: userPrincipal,
-        // Add more user info here if available
-      });
-      navigate('/dashboard'); // Redirect after login
-    },
-    identityProvider: 'https://identity.ic0.app/#authorize',
-  });
-};
+    if (!authClient) return;
+    await authClient.login({
+      onSuccess: () => {
+        setIsAuthenticated(true);
+        const userPrincipal = authClient.getIdentity().getPrincipal().toText();
+        setPrincipal(userPrincipal);
+        H.identify(userPrincipal, {
+          principal: userPrincipal,
+        });
+        navigate('/dashboard'); // Redirect after login
+      },
+      identityProvider: 'https://identity.ic0.app/#authorize',
+    });
+  };
 
-
+  // Logout handler
   const logout = async () => {
     if (!authClient) return;
     await authClient.logout();
@@ -77,16 +80,15 @@ const AppContent = () => {
 
   return (
     <div className="app">
+      {/* Show header/footer unless on dashboard or canvas */}
       {!hideLayout && (
-  <Header
-    isAuthenticated={isAuthenticated}
-    principal={principal}
-    onLogin={login}
-    onLogout={logout}
-  />
-)}
-
-
+        <Header
+          isAuthenticated={isAuthenticated}
+          principal={principal}
+          onLogin={login}
+          onLogout={logout}
+        />
+      )}
 
       <main>
         <Routes>
@@ -99,19 +101,20 @@ const AppContent = () => {
               </>
             }
           />
-          <Route 
-          path="/dashboard" 
-          element={<Dashboard authClient={authClient} />} 
+          <Route
+            path="/dashboard"
+            element={<Dashboard authClient={authClient} />}
           />
-          <Route path= "/Canvas"
-          element={<Canvas/>}
+          <Route
+            path="/canvas"
+            element={<Canvas />}
           />
+          {/* Support both /oauth2callback and /OAuth2Callback */}
           <Route path="/oauth2callback" element={<OAuth2Callback />} />
+          <Route path="/OAuth2Callback" element={<OAuth2Callback />} />
         </Routes>
       </main>
       {!hideLayout && <Footer />}
-      
-
     </div>
   );
 };

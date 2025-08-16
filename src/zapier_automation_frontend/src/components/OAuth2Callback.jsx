@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { zapier_automation_backend } from "declarations/zapier_automation_backend";
-import { v4 as uuidv4 } from 'uuid'; // Or any other UUID generator
+
+/**
+ * Handles the redirect step of Google OAuth2.
+ * Exchanges 'code' in the URL for tokens via backend, while verifying 'state' (CSRF protection).
+ */
+
+const ENABLE_DEBUG = true; // << Turn on debugging
 
 const OAuth2Callback = () => {
   const navigate = useNavigate();
@@ -13,54 +19,85 @@ const OAuth2Callback = () => {
     const code = searchParams.get("code");
     const error = searchParams.get("error");
     const state = searchParams.get("state");
-    const storedState = localStorage.getItem("google_oauth_state");
+
+    // Retrieve state from sessionStorage, fallback to localStorage
+    let storedState = sessionStorage.getItem("google_oauth_state");
+    if (!storedState) {
+      storedState = localStorage.getItem("google_oauth_state");
+    }
+
+    // === Debug logging ===
+    if (ENABLE_DEBUG) {
+      console.log("=== [OAuth2Callback] ===");
+      console.log("[Callback] URL query state:      ", state);
+      console.log("[Callback] SessionStorage state: ", sessionStorage.getItem("google_oauth_state"));
+      console.log("[Callback] LocalStorage state:   ", localStorage.getItem("google_oauth_state"));
+      console.log("[Callback] Resolved storedState: ", storedState);
+      console.log("[Callback] URL query code:       ", code);
+      console.log("[Callback] URL query error:      ", error);
+      console.log("[Callback] Full location.search: ", location.search);
+    }
 
     const exchangeCode = async () => {
+      // OAuth2 error from Google
       if (error) {
         setStatus(`OAuth error: ${error}`);
-        console.error("OAuth error:", error);
-        navigate("/Canvas?error=oauth_error");
+        if (ENABLE_DEBUG) console.error("[Callback] OAuth error:", error);
+        setTimeout(() => navigate("/Canvas?error=oauth_error"), 1200);
         return;
       }
 
+      // No code returned
       if (!code) {
         setStatus("Missing authorization code.");
-        navigate("/Canvas?error=missing_code");
+        setTimeout(() => navigate("/Canvas?error=missing_code"), 1200);
         return;
       }
 
+      // CSRF/State check
       if (!state || !storedState || state !== storedState) {
         setStatus("Invalid state parameter.");
-        console.error("OAuth state mismatch:", { state, storedState });
-        navigate("/Canvas?error=invalid_state");
+        if (ENABLE_DEBUG) console.error("[Callback] OAuth state mismatch:", { state, storedState });
+        setTimeout(() => navigate("/Canvas?error=invalid_state"), 1400);
         return;
       }
 
-      localStorage.removeItem("google_oauth_state");
+      // Clear the state value from storage after verification
+      sessionStorage.removeItem("google_oauth_state");
+      localStorage.removeItem("google_oauth_state"); // Clean both just in case
 
       try {
         setStatus("Exchanging code for tokens...");
-
+        if (ENABLE_DEBUG) {
+          console.log("[Callback] Exchanging code for tokens with state:", state, "code:", code);
+        }
         const tokenResponse = await zapier_automation_backend.exchange_google_code_v2(code, state);
 
         if ("ok" in tokenResponse) {
           const token = tokenResponse.ok;
-
-          // Store access_token in localStorage if needed for client display (not recommended for long term)
           localStorage.setItem("google_connected", "true");
           localStorage.setItem("google_access_token", token.access_token);
 
-          setStatus("Google connected. Redirecting...");
-          navigate("/Canvas?google_connected=true");
+          setStatus("Google connected successfully. Redirecting...");
+          if (ENABLE_DEBUG) {
+            console.log("[Callback] OAuth exchange successful; access_token:", token.access_token);
+          }
+          setTimeout(() => {
+            navigate("/Canvas?google_connected=true");
+          }, 1700);
         } else {
-          console.error("Backend returned error:", tokenResponse.err);
-          throw new Error(tokenResponse.err);
+          if (ENABLE_DEBUG) console.error("[Callback] Backend returned error:", tokenResponse.err);
+          setStatus("Failed to exchange code: " + tokenResponse.err);
+          setTimeout(() => {
+            navigate(`/Canvas?error=${encodeURIComponent(tokenResponse.err)}`);
+          }, 1500);
         }
       } catch (err) {
-        console.error("OAuth Error:", err);
-        console.error("Error details:", err.message);
+        if (ENABLE_DEBUG) console.error("[Callback] OAuth Error:", err);
         setStatus("Failed to exchange code.");
-        navigate(`/Canvas?error=${encodeURIComponent(err.message || "exchange_failed")}`);
+        setTimeout(() => {
+          navigate(`/Canvas?error=${encodeURIComponent(err.message || "exchange_failed")}`);
+        }, 1400);
       }
     };
 
