@@ -1,6 +1,6 @@
 use candid::{CandidType, Deserialize, Principal};
 use ic_cdk::api::management_canister::http_request::{
-    http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse
+    http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod
 };
 use serde::Serialize;
 use std::cell::RefCell;
@@ -69,7 +69,7 @@ pub async fn exchange_google_code(code: String) -> Result<GoogleTokenResponse, S
             serde_json::from_str(&response_text)
                 .map_err(|e| format!("Failed to parse Google token response: {}", e))
         },
-        Err((code, msg)) => Err(format!("HTTP request failed {}: {}", code, msg)),
+        Err((code, msg)) => Err(format!("HTTP request failed {:?}: {}", code, msg)),
     }
 }
 
@@ -116,7 +116,7 @@ pub async fn get_google_calendars_with_token(access_token: &str) -> Result<Vec<G
                 })
                 .collect())
         },
-        Err((code, msg)) => Err(format!("HTTP request failed {}: {}", code, msg)),
+        Err((code, msg)) => Err(format!("HTTP request failed {:?}: {}", code, msg)),
     }
 }
 

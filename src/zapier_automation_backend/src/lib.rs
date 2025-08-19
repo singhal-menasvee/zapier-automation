@@ -6,7 +6,7 @@ use crate::adapters::web2;
 
 use crate::adapters::webhook as wh;
 use ic_cdk::api::management_canister::http_request::{
-    CanisterHttpRequestArgument, HttpHeader, HttpResponse
+    CanisterHttpRequestArgument, HttpHeader, HttpResponse,HttpMethod
 };
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -58,7 +58,7 @@ fn http_request(req: CanisterHttpRequestArgument) -> HttpResponse {
     if req.url.starts_with("/webhook/") {
         if let Some(webhook_id) = req.url.split('/').nth(2).and_then(|s| s.split('?').next()) {
             if let Some(webhook) = WEBHOOKS.with(|hooks| hooks.borrow().get(webhook_id).cloned()) {
-                if req.method == "POST".to_string() {
+                if req.method == HttpMethod::POST {
                     let payload = String::from_utf8(req.body.unwrap_or_default()).unwrap_or_default();
                     WORKFLOW_INPUTS.with(|inputs| inputs.borrow_mut().insert(webhook.workflow_id, payload));
 

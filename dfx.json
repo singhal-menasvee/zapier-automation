@@ -1,13 +1,11 @@
 {
-  
-
+  "dfx": "0.12.1",
 
   "canisters": {
     "zapier_automation_backend": {
       "candid": "src/zapier_automation_backend/zapier_automation_backend.did",
       "package": "zapier_automation_backend",
       "type": "rust"
-      
     },
     "zapier_automation_frontend": {
       "dependencies": [

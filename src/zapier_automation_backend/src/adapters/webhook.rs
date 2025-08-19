@@ -1,12 +1,14 @@
 use candid::{CandidType, Deserialize, Principal};
 use ic_cdk::api::management_canister::http_request::{
-    http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse
+    http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod
 };
 use ic_cdk::api::time;
 use rand::{RngCore, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use num_traits::ToPrimitive; 
+
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct WebhookTrigger {
@@ -88,7 +90,7 @@ pub async fn send_webhook_action(
 
     match http_request(request_arg, 100_000_000).await { // Added cycles parameter
         Ok((response,)) => Ok(WebhookHttpResponse {
-            status_code: response.status as u16,
+            status_code: response.status.0.to_u16().unwrap_or(500),
             headers: response.headers.into_iter()
                 .map(|h| (h.name, h.value))
                 .collect(),
