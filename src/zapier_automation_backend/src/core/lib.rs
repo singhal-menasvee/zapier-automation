@@ -307,6 +307,7 @@ pub async fn exchange_google_code_flat(code: String, state: String) -> web2::Goo
 #[ic_cdk::update]
 #[candid::candid_method(update)]
 pub async fn exchange_google_code_v2(code: String, state: String) -> Result<web2::GoogleTokenResponse, String> {
+    // Add Gmail scopes here along with Calendar scopes
     let token_response = web2::exchange_google_code(code.clone()).await
         .map_err(|e| format!("Failed to exchange code: {}", e))?;
 
@@ -339,10 +340,21 @@ pub async fn get_google_calendars(state: String) -> Result<Vec<web2::GoogleCalen
     web2::get_google_calendars_with_token(&token.access_token).await
 }
 
+// New function to get Gmail profile using stored tokens
+
+#[ic_cdk::update]
+#[candid::candid_method(update)]
+pub async fn get_gmail_profile(state: String) -> Result<web2::GoogleGmailProfile, String> {
+    let token = GOOGLE_TOKENS.with(|tokens| tokens.borrow().get(&state).cloned())
+        .ok_or("No Google token found. Please authenticate first.")?;
+
+    web2::get_google_gmail_profile_with_token(&token.access_token).await
+}
+
 #[ic_cdk::query]
 #[candid::candid_method(query)]
 pub fn get_google_auth_url(state: String) -> String {
-    let scope = "https://www.googleapis.com/auth/calendar.readonly";
+    let scope = "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/gmail.readonly";
     format!(
         "https://accounts.google.com/o/oauth2/v2/auth?client_id={}&redirect_uri={}&response_type=code&scope={}&access_type=offline&state={}&prompt=consent",
         GOOGLE_CLIENT_ID, REDIRECT_URI, scope, state
@@ -356,6 +368,4 @@ pub fn schedule_recurring_execution() {
     });
 }
 
-
-
-pub use crate::adapters::web2::{GoogleTokenResponse, GoogleCalendar};
+pub use crate::adapters::web2::{GoogleTokenResponse, GoogleCalendar, GoogleGmailProfile};
