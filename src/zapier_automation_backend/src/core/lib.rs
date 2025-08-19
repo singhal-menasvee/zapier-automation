@@ -4,7 +4,6 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::time::Duration;
 use crate::adapters::web2;
-
 // Explicit Result type for Candid compatibility
 use std::result::Result;
 

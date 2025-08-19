@@ -1,135 +1,80 @@
+// src/components/OAuth2Callback.jsx 
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { zapier_automation_backend } from "declarations/zapier_automation_backend";
-import { v4 as uuidv4 } from 'uuid'; // Or any other UUID generator
 
-const OAuth2Callback = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [status, setStatus] = useState("Processing OAuth callback...");
+// Google OAuth details (must match backend web2.rs constants)
+const GOOGLE_CLIENT_ID =
+  "548274771061-rpqt1l6i19hucmpar07nis5obr5shm0j.apps.googleusercontent.com";
+const REDIRECT_URI = "http://localhost:3000/OAuth2Callback";
 
+export default function OAuth2Callback() {
+  const [status, setStatus] = useState("Waiting for authentication...");
+
+  // Extract "code" from redirect URL
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const code = searchParams.get("code");
-    const error = searchParams.get("error");
-    const state = searchParams.get("state");
-    const storedState = localStorage.getItem("google_oauth_state");
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
 
-    const exchangeCode = async () => {
-      if (error) {
-        setStatus(`OAuth error: ${error}`);
-        console.error("OAuth error:", error);
-        navigate("/Canvas?error=oauth_error");
-        return;
-      }
+    if (!code) {
+      setStatus("No authorization code found in redirect.");
+      return;
+    }
 
-      if (!code) {
-        setStatus("Missing authorization code.");
-        navigate("/Canvas?error=missing_code");
-        return;
-      }
+    setStatus("Exchanging code for tokens...");
 
-      if (!state || !storedState || state !== storedState) {
-        setStatus("Invalid state parameter.");
-        console.error("OAuth state mismatch:", { state, storedState });
-        navigate("/Canvas?error=invalid_state");
-        return;
-      }
-
-      localStorage.removeItem("google_oauth_state");
-
+    // Call backend canister method
+    (async () => {
       try {
-        setStatus("Exchanging code for tokens...");
+        const response = await fetch(
+          "http://localhost:4943/api/v2/canister/uxrrr-q7777-77774-qaaaq-cai/call",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              method: "google_oauth_callback",
+              args: [code],
+            }),
+          }
+        );
 
-        const tokenResponse = await zapier_automation_backend.exchange_google_code_v2(code, state);
+        if (!response.ok) throw new Error("Backend request failed");
 
-        if ("ok" in tokenResponse) {
-          const token = tokenResponse.ok;
-
-          // Store access_token in localStorage if needed for client display (not recommended for long term)
-          localStorage.setItem("google_connected", "true");
-          localStorage.setItem("google_access_token", token.access_token);
-
-          setStatus("Google connected. Redirecting...");
-          navigate("/Canvas?google_connected=true");
-        } else {
-          console.error("Backend returned error:", tokenResponse.err);
-          throw new Error(tokenResponse.err);
-        }
+        setStatus("✅ Successfully connected to Google Sheets!");
       } catch (err) {
-        console.error("OAuth Error:", err);
-        console.error("Error details:", err.message);
-        setStatus("Failed to exchange code.");
-        navigate(`/Canvas?error=${encodeURIComponent(err.message || "exchange_failed")}`);
+        setStatus("❌ Failed to exchange code: " + err.message);
       }
-    };
-
-    exchangeCode();
-  }, [navigate, location]);
+    })();
+  }, []);
 
   return (
-    <div style={{
-      padding: "2rem",
-      color: "#333",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: "100vh"
-    }}>
-      <div style={{
-        textAlign: "center",
-        maxWidth: "500px",
-        padding: "2rem",
-        borderRadius: "12px",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-        backgroundColor: "#fff"
-      }}>
-        <h2 style={{
-          marginBottom: "1rem",
-          color: "#1a73e8",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "0.5rem"
-        }}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="#1a73e8">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V9h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-          </svg>
-          Connecting your Google Account...
-        </h2>
-
-        <div style={{
-          margin: "1.5rem 0",
-          height: "4px",
-          backgroundColor: "#f1f1f1",
-          borderRadius: "2px",
-          overflow: "hidden"
-        }}>
-          <div style={{
-            height: "100%",
-            width: "70%",
-            backgroundColor: "#1a73e8",
-            animation: "progress 2s ease-in-out infinite",
-            backgroundImage: "linear-gradient(-45deg, rgba(255,255,255,0.2) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.2) 75%, transparent 75%, transparent)"
-          }}></div>
-        </div>
-
-        <p style={{ marginBottom: "1.5rem" }}>{status}</p>
-
-        <div style={{
-          padding: "1rem",
-          backgroundColor: "#f8f9fa",
-          borderRadius: "8px",
-          fontSize: "0.9rem"
-        }}>
-          {location.search.includes("code=")
-            ? `Authorization code received (${location.search.match(/code=([^&]+)/)?.[1].slice(0, 10)}...)`
-            : "Waiting for authorization code..."}
-        </div>
-      </div>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+      <h1 className="text-xl font-bold mb-4">Google OAuth2 Callback</h1>
+      <p>{status}</p>
     </div>
   );
-};
+}
 
-export default OAuth2Callback;
+// This button is imported in TriggerTypeSelector.jsx
+export function ConnectSheetsButton() {
+  const handleClick = () => {
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(
+      REDIRECT_URI
+    )}&response_type=code&scope=${encodeURIComponent(
+      "https://www.googleapis.com/auth/calendar.readonly"
+    )}&access_type=offline&prompt=consent`;
+
+    console.log("🔗 Redirecting to:", authUrl); // 👈 Added debug log
+
+    window.location.href = authUrl;
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-md"
+    >
+      Connect Google Sheets
+    </button>
+  );
+}

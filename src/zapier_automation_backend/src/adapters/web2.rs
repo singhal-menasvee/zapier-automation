@@ -124,6 +124,28 @@ pub async fn get_google_calendars_with_token(access_token: &str) -> Result<Vec<G
 
     Ok(calendars.items)
 }
+// Builds the Google OAuth consent URL that the frontend should open
+pub fn build_google_auth_url(state: &str) -> String {
+    // keep Sheets scopes (and Drive readonly to allow selecting spreadsheets by picker, later)
+    let scopes = vec![
+        "https://www.googleapis.com/auth/spreadsheets.readonly",
+        "https://www.googleapis.com/auth/drive.readonly",
+        // optional: basic OIDC scopes if you want user info
+        "openid",
+        "email",
+        "profile",
+    ];
+    let scope_param = scopes.join(" ");
+
+    format!(
+        "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={}&redirect_uri={}&scope={}&access_type=offline&prompt=consent&state={}",
+        GOOGLE_CLIENT_ID,
+        REDIRECT_URI,
+        urlencoding::encode(&scope_param),
+        urlencoding::encode(state)
+    )
+}
+
 
 #[allow(dead_code)]
 fn validate_token_response(token: &GoogleTokenResponse) -> Result<(), String> {
