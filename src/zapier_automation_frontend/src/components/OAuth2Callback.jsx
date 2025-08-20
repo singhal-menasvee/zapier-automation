@@ -76,7 +76,7 @@ const OAuth2Callback = () => {
         if ("ok" in tokenResponse) {
           const token = tokenResponse.ok;
           localStorage.setItem("google_connected", "true");
-          localStorage.setItem("google_access_token", token.access_token);
+          localStorage.setItem("google_access_token", token.access_token);  //store access token
 
           setStatus("Google connected successfully. Redirecting...");
           if (ENABLE_DEBUG) {
