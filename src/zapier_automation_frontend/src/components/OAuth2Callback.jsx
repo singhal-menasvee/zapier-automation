@@ -1,7 +1,5 @@
 // src/components/OAuth2Callback.jsx 
 import React, { useEffect, useState } from "react";
-<<<<<<< HEAD
-=======
 import { useNavigate, useLocation } from "react-router-dom";
 import { zapier_automation_backend } from "declarations/zapier_automation_backend";
 
@@ -11,7 +9,6 @@ import { zapier_automation_backend } from "declarations/zapier_automation_backen
  */
 
 const ENABLE_DEBUG = true; // << Turn on debugging
->>>>>>> 0e070872c7c13b8e8c3bb89896cd766cafbaeeea
 
 // Google OAuth details (must match backend web2.rs constants)
 const GOOGLE_CLIENT_ID =
@@ -20,20 +17,11 @@ const REDIRECT_URI = "http://localhost:3000/OAuth2Callback";
 
 export default function OAuth2Callback() {
   const [status, setStatus] = useState("Waiting for authentication...");
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Extract "code" from redirect URL
   useEffect(() => {
-<<<<<<< HEAD
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get("code");
-
-    if (!code) {
-      setStatus("No authorization code found in redirect.");
-      return;
-    }
-
-    setStatus("Exchanging code for tokens...");
-=======
     const searchParams = new URLSearchParams(location.search);
     const code = searchParams.get("code");
     const error = searchParams.get("error");
@@ -58,62 +46,39 @@ export default function OAuth2Callback() {
     }
 
     const exchangeCode = async () => {
-      // OAuth2 error from Google
-      if (error) {
-        setStatus(`OAuth error: ${error}`);
-        if (ENABLE_DEBUG) console.error("[Callback] OAuth error:", error);
-        setTimeout(() => navigate("/Canvas?error=oauth_error"), 1200);
-        return;
-      }
-
-      // No code returned
-      if (!code) {
-        setStatus("Missing authorization code.");
-        setTimeout(() => navigate("/Canvas?error=missing_code"), 1200);
-        return;
-      }
-
-      // CSRF/State check
-      if (!state || !storedState || state !== storedState) {
-        setStatus("Invalid state parameter.");
-        if (ENABLE_DEBUG) console.error("[Callback] OAuth state mismatch:", { state, storedState });
-        setTimeout(() => navigate("/Canvas?error=invalid_state"), 1400);
-        return;
-      }
-
-      // Clear the state value from storage after verification
-      sessionStorage.removeItem("google_oauth_state");
-      localStorage.removeItem("google_oauth_state"); // Clean both just in case
->>>>>>> 0e070872c7c13b8e8c3bb89896cd766cafbaeeea
-
-    // Call backend canister method
-    (async () => {
       try {
-<<<<<<< HEAD
-        const response = await fetch(
-          "http://localhost:4943/api/v2/canister/uxrrr-q7777-77774-qaaaq-cai/call",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              method: "google_oauth_callback",
-              args: [code],
-            }),
-          }
-        );
+        // OAuth2 error from Google
+        if (error) {
+          setStatus(`OAuth error: ${error}`);
+          if (ENABLE_DEBUG) console.error("[Callback] OAuth error:", error);
+          setTimeout(() => navigate("/Canvas?error=oauth_error"), 1200);
+          return;
+        }
 
-        if (!response.ok) throw new Error("Backend request failed");
+        // No code returned
+        if (!code) {
+          setStatus("Missing authorization code.");
+          setTimeout(() => navigate("/Canvas?error=missing_code"), 1200);
+          return;
+        }
 
-        setStatus("✅ Successfully connected to Google Sheets!");
-      } catch (err) {
-        setStatus("❌ Failed to exchange code: " + err.message);
-=======
+        // CSRF/State check
+        if (!state || !storedState || state !== storedState) {
+          setStatus("Invalid state parameter.");
+          if (ENABLE_DEBUG) console.error("[Callback] OAuth state mismatch:", { state, storedState });
+          setTimeout(() => navigate("/Canvas?error=invalid_state"), 1400);
+          return;
+        }
+
+        // Clear the state value from storage after verification
+        sessionStorage.removeItem("google_oauth_state");
+        localStorage.removeItem("google_oauth_state"); // Clean both just in case
+
         setStatus("Exchanging code for tokens...");
         if (ENABLE_DEBUG) {
           console.log("[Callback] Exchanging code for tokens with state:", state, "code:", code);
         }
+
         const tokenResponse = await zapier_automation_backend.exchange_google_code_v2(code, state);
 
         if ("ok" in tokenResponse) {
@@ -141,10 +106,11 @@ export default function OAuth2Callback() {
         setTimeout(() => {
           navigate(`/Canvas?error=${encodeURIComponent(err.message || "exchange_failed")}`);
         }, 1400);
->>>>>>> 0e070872c7c13b8e8c3bb89896cd766cafbaeeea
       }
-    })();
-  }, []);
+    };
+
+    exchangeCode();
+  }, [location, navigate]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
