@@ -8,6 +8,7 @@ import Canvas from './components/Canvas/Canvas';
 import { AuthClient } from '@dfinity/auth-client';
 import OAuth2Callback from './components/OAuth2Callback';
 import { H } from 'highlight.run';
+import Header from './components/Header/Header'; // ✅ keep Header since remote used it
 import './App.css';
 
 // Main app logic wrapped for Router access
@@ -15,14 +16,11 @@ const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-<<<<<<< HEAD
-=======
   // Hide layout for dashboard/canvas views
   const hideLayout =
     location.pathname.toLowerCase() === '/dashboard' ||
     location.pathname.toLowerCase() === '/canvas';
 
->>>>>>> 0e070872c7c13b8e8c3bb89896cd766cafbaeeea
   const [authClient, setAuthClient] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [principal, setPrincipal] = useState(null);
@@ -41,11 +39,8 @@ const AppContent = () => {
         ],
       },
     });
-<<<<<<< HEAD
 
-=======
     // Initialize Internet Identity authentication
->>>>>>> 0e070872c7c13b8e8c3bb89896cd766cafbaeeea
     const initAuth = async () => {
       const client = await AuthClient.create();
       setAuthClient(client);
@@ -66,15 +61,10 @@ const AppContent = () => {
         setIsAuthenticated(true);
         const userPrincipal = authClient.getIdentity().getPrincipal().toText();
         setPrincipal(userPrincipal);
-<<<<<<< HEAD
-        H.identify(userPrincipal, { principal: userPrincipal });
-        navigate('/dashboard');
-=======
         H.identify(userPrincipal, {
           principal: userPrincipal,
         });
         navigate('/dashboard'); // Redirect after login
->>>>>>> 0e070872c7c13b8e8c3bb89896cd766cafbaeeea
       },
       identityProvider: 'https://identity.ic0.app/#authorize',
     });
@@ -93,65 +83,12 @@ const AppContent = () => {
     <div className="app">
       {/* Show header/footer unless on dashboard or canvas */}
       {!hideLayout && (
-<<<<<<< HEAD
-        <header className="navbar" style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '10px 20px',
-          backgroundColor: '#0d1b2a',
-          color: 'white'
-        }}>
-          {/* Left side: logo + site name */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img src="/icplogo.png" alt="ICP Logo" style={{ width: '50px', height: 'auto' }} />
-            <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Decentral Flow</h1>
-          </div>
-
-          {/* Right side: login/logout */}
-          <div>
-            {isAuthenticated ? (
-              <>
-                <span style={{ marginRight: '10px' }}>{principal}</span>
-                <button
-                  onClick={logout}
-                  style={{
-                    padding: '5px 15px',
-                    backgroundColor: '#1b263b',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={login}
-                style={{
-                  padding: '5px 15px',
-                  backgroundColor: '#1b263b',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer'
-                }}
-              >
-                Login
-              </button>
-            )}
-          </div>
-        </header>
-=======
         <Header
           isAuthenticated={isAuthenticated}
           principal={principal}
           onLogin={login}
           onLogout={logout}
         />
->>>>>>> 0e070872c7c13b8e8c3bb89896cd766cafbaeeea
       )}
 
       <main>
@@ -165,10 +102,6 @@ const AppContent = () => {
               </>
             }
           />
-<<<<<<< HEAD
-          <Route path="/dashboard" element={<Dashboard authClient={authClient} />} />
-          <Route path="/Canvas" element={<Canvas />} />
-=======
           <Route
             path="/dashboard"
             element={<Dashboard authClient={authClient} />}
@@ -178,15 +111,11 @@ const AppContent = () => {
             element={<Canvas />}
           />
           {/* Support both /oauth2callback and /OAuth2Callback */}
->>>>>>> 0e070872c7c13b8e8c3bb89896cd766cafbaeeea
           <Route path="/oauth2callback" element={<OAuth2Callback />} />
           <Route path="/OAuth2Callback" element={<OAuth2Callback />} />
         </Routes>
       </main>
-<<<<<<< HEAD
 
-=======
->>>>>>> 0e070872c7c13b8e8c3bb89896cd766cafbaeeea
       {!hideLayout && <Footer />}
     </div>
   );
@@ -201,4 +130,3 @@ function App() {
 }
 
 export default App;
-
