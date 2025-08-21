@@ -13,11 +13,16 @@ const GoogleCalendarPanel = ({ onClose, onConnect, selectedTrigger }) => {
   useEffect(() => {
     const checkConnectionStatus = async () => {
       try {
-        const hasToken = await zapier_automation_backend.has_google_token("");
+        const state = sessionStorage.getItem('google_oauth_state') || localStorage.getItem('google_oauth_state');
+        if (!state) {
+          setIsConnected(false);
+          return;
+        }
+        const hasToken = await zapier_automation_backend.has_google_token(state);
         setIsConnected(hasToken);
 
         if (hasToken) {
-          await fetchCalendars();
+          await fetchCalendars(state);
         }
       } catch (err) {
         console.error('Error checking connection:', err);
@@ -27,11 +32,16 @@ const GoogleCalendarPanel = ({ onClose, onConnect, selectedTrigger }) => {
     checkConnectionStatus();
   }, []);
 
-  const fetchCalendars = async () => {
+  const fetchCalendars = async (state) => {
     setLoading(true);
     setError('');
     try {
-      const calendarList = await zapier_automation_backend.get_google_calendars();
+      if (!state) {
+        setIsConnected(false);
+        setLoading(false);
+        return;
+      }
+      const calendarList = await zapier_automation_backend.get_google_calendars(state);
       setCalendars(calendarList);
     } catch (err) {
       console.error('Error fetching calendars:', err);
@@ -49,11 +59,11 @@ const GoogleCalendarPanel = ({ onClose, onConnect, selectedTrigger }) => {
 
       // Generate a secure state token
       const state = crypto.randomUUID();
-      localStorage.setItem('google_oauth_state', state);
+      sessionStorage.setItem('google_oauth_state', state);
 
       // For debugging (remove in production)
       console.log('Generated OAuth state:', state);
-      console.log('Saved OAuth state in localStorage:', localStorage.getItem('google_oauth_state'));
+      console.log('Saved OAuth state in sessionStorage:', sessionStorage.getItem('google_oauth_state'));
 
       // Get auth URL from backend
       const authUrl = await zapier_automation_backend.get_google_auth_url(state);
@@ -144,7 +154,10 @@ const GoogleCalendarPanel = ({ onClose, onConnect, selectedTrigger }) => {
             <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4">
               <p className="text-sm text-red-600">{error}</p>
               <button
-                onClick={fetchCalendars}
+                onClick={() => {
+                  const state = sessionStorage.getItem('google_oauth_state') || localStorage.getItem('google_oauth_state');
+                  fetchCalendars(state);
+                }}
                 className="text-xs text-red-700 hover:text-red-900 mt-1"
               >
                 Retry

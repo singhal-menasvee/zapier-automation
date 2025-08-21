@@ -10,15 +10,24 @@ import OAuth2Callback from './components/OAuth2Callback';
 import { H } from 'highlight.run';
 import './App.css';
 
+// Main app logic wrapped for Router access
 const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const hideLayout = location.pathname === '/dashboard' || location.pathname === '/Canvas';
 
+<<<<<<< HEAD
+=======
+  // Hide layout for dashboard/canvas views
+  const hideLayout =
+    location.pathname.toLowerCase() === '/dashboard' ||
+    location.pathname.toLowerCase() === '/canvas';
+
+>>>>>>> 0e070872c7c13b8e8c3bb89896cd766cafbaeeea
   const [authClient, setAuthClient] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [principal, setPrincipal] = useState(null);
 
+  // Highlight.run initialization for monitoring
   useEffect(() => {
     H.init('qe9845od', {
       serviceName: "frontend-app",
@@ -32,7 +41,11 @@ const AppContent = () => {
         ],
       },
     });
+<<<<<<< HEAD
 
+=======
+    // Initialize Internet Identity authentication
+>>>>>>> 0e070872c7c13b8e8c3bb89896cd766cafbaeeea
     const initAuth = async () => {
       const client = await AuthClient.create();
       setAuthClient(client);
@@ -45,6 +58,7 @@ const AppContent = () => {
     initAuth();
   }, []);
 
+  // Login handler
   const login = async () => {
     if (!authClient) return;
     await authClient.login({
@@ -52,13 +66,21 @@ const AppContent = () => {
         setIsAuthenticated(true);
         const userPrincipal = authClient.getIdentity().getPrincipal().toText();
         setPrincipal(userPrincipal);
+<<<<<<< HEAD
         H.identify(userPrincipal, { principal: userPrincipal });
         navigate('/dashboard');
+=======
+        H.identify(userPrincipal, {
+          principal: userPrincipal,
+        });
+        navigate('/dashboard'); // Redirect after login
+>>>>>>> 0e070872c7c13b8e8c3bb89896cd766cafbaeeea
       },
       identityProvider: 'https://identity.ic0.app/#authorize',
     });
   };
 
+  // Logout handler
   const logout = async () => {
     if (!authClient) return;
     await authClient.logout();
@@ -69,7 +91,9 @@ const AppContent = () => {
 
   return (
     <div className="app">
+      {/* Show header/footer unless on dashboard or canvas */}
       {!hideLayout && (
+<<<<<<< HEAD
         <header className="navbar" style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -120,6 +144,14 @@ const AppContent = () => {
             )}
           </div>
         </header>
+=======
+        <Header
+          isAuthenticated={isAuthenticated}
+          principal={principal}
+          onLogin={login}
+          onLogout={logout}
+        />
+>>>>>>> 0e070872c7c13b8e8c3bb89896cd766cafbaeeea
       )}
 
       <main>
@@ -133,12 +165,28 @@ const AppContent = () => {
               </>
             }
           />
+<<<<<<< HEAD
           <Route path="/dashboard" element={<Dashboard authClient={authClient} />} />
           <Route path="/Canvas" element={<Canvas />} />
+=======
+          <Route
+            path="/dashboard"
+            element={<Dashboard authClient={authClient} />}
+          />
+          <Route
+            path="/canvas"
+            element={<Canvas />}
+          />
+          {/* Support both /oauth2callback and /OAuth2Callback */}
+>>>>>>> 0e070872c7c13b8e8c3bb89896cd766cafbaeeea
           <Route path="/oauth2callback" element={<OAuth2Callback />} />
+          <Route path="/OAuth2Callback" element={<OAuth2Callback />} />
         </Routes>
       </main>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 0e070872c7c13b8e8c3bb89896cd766cafbaeeea
       {!hideLayout && <Footer />}
     </div>
   );
