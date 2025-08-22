@@ -102,8 +102,10 @@ pub async fn send_webhook_action(
     }
 }
 
+
 pub fn validate_incoming(secret: &str, headers: &[(String, String)]) -> bool {
     headers.iter()
         .find(|(k, _)| k.eq_ignore_ascii_case("x-webhook-signature"))
         .map_or(true, |(_, value)| value == secret)
 }
+
