@@ -8,7 +8,7 @@ use ic_cdk_macros::{update, query};
 use ic_cdk::api::call::call;
 use std::cell::RefCell;
 
-// State structures as before...
+// =================== STATE ===================
 
 #[derive(Serialize, Deserialize, Debug, CandidType, Clone, Default)]
 pub struct GoogleTokenUserState {
@@ -20,7 +20,7 @@ thread_local! {
     static GOOGLE_TOKEN_STORE: RefCell<HashMap<Principal, GoogleTokenUserState>> = Default::default();
 }
 
-// OAuth token response as before...
+// =================== TOKEN ===================
 
 #[derive(Serialize, Deserialize, Debug, CandidType, Clone, Default)]
 pub struct GoogleTokenResponse {
@@ -32,7 +32,7 @@ pub struct GoogleTokenResponse {
     pub id_token: Option<String>,
 }
 
-// Google Calendar structs as before...
+// =================== CALENDAR ===================
 
 #[derive(Serialize, Deserialize, Debug, CandidType, Clone)]
 pub struct GoogleCalendar {
@@ -56,21 +56,37 @@ pub struct GoogleDateTime {
     pub date: Option<String>,
 }
 
-// New: Gmail profile struct
+// =================== GMAIL ===================
 
 #[derive(Serialize, Deserialize, Debug, CandidType, Clone)]
 pub struct GoogleGmailProfile {
     pub email_address: String,
 }
 
-// Constants, URLs, cycles same as before...
+// =================== CONSTANTS ===================
 
 const MAX_RESPONSE_BYTES: Option<u64> = Some(5000);
 const CYCLES: u128 = 2_000_000_000;
 
-// Existing functions for exchange, calendar fetching, events fetching unchanged...
+// ⚡ CHANGE THESE for your project
+const GOOGLE_CLIENT_ID: &str = "548274771061-rpqt1l6i19hucmpar07nis5obr5.apps.googleusercontent.com";
+const GOOGLE_CLIENT_SECRET: &str = "YOUR_GOOGLE_CLIENT_SECRET"; 
+const REDIRECT_URI: &str = "http://localhost:3000/oauth2/callback"; // must match React + GCP console
+const GOOGLE_SCOPE: &str = "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/spreadsheets.readonly";
 
-// New: Fetch Gmail profile with token
+// =================== OAUTH URL GENERATOR ===================
+
+#[query]
+pub fn get_google_auth_url() -> String {
+    format!(
+        "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={}&redirect_uri={}&scope={}&access_type=offline&prompt=consent",
+        GOOGLE_CLIENT_ID,
+        REDIRECT_URI,
+        urlencoding::encode(GOOGLE_SCOPE),
+    )
+}
+
+// =================== GMAIL PROFILE FETCH ===================
 
 pub async fn get_google_gmail_profile_with_token(access_token: &str) -> Result<GoogleGmailProfile, String> {
     let request = CanisterHttpRequestArgument {
@@ -86,66 +102,17 @@ pub async fn get_google_gmail_profile_with_token(access_token: &str) -> Result<G
         max_response_bytes: MAX_RESPONSE_BYTES,
         transform: None,
     };
-    
+
     let (response,) = ic_cdk::api::management_canister::http_request::http_request(request, CYCLES)
         .await
         .map_err(|e| format!("Failed Gmail profile HTTP call: {:?}", e))?;
-        
+
     if response.status != Nat::from(200u32) {
         return Err(format!("Gmail profile HTTP returned status: {}", response.status));
     }
-<<<<<<< HEAD
 
-    #[derive(Deserialize)]
-    struct CalendarList {
-        items: Vec<GoogleCalendar>,
-    }
-
-    let calendars: CalendarList = serde_json::from_slice(&response.body)
-        .map_err(|e| format!("Failed to parse calendar response: {:?}", e))?;
-
-    Ok(calendars.items)
-}
-// Builds the Google OAuth consent URL that the frontend should open
-pub fn build_google_auth_url(state: &str) -> String {
-    // keep Sheets scopes (and Drive readonly to allow selecting spreadsheets by picker, later)
-    let scopes = vec![
-        "https://www.googleapis.com/auth/spreadsheets.readonly",
-        "https://www.googleapis.com/auth/drive.readonly",
-        // optional: basic OIDC scopes if you want user info
-        "openid",
-        "email",
-        "profile",
-    ];
-    let scope_param = scopes.join(" ");
-
-    format!(
-        "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={}&redirect_uri={}&scope={}&access_type=offline&prompt=consent&state={}",
-        GOOGLE_CLIENT_ID,
-        REDIRECT_URI,
-        urlencoding::encode(&scope_param),
-        urlencoding::encode(state)
-    )
-}
-
-
-#[allow(dead_code)]
-fn validate_token_response(token: &GoogleTokenResponse) -> Result<(), String> {
-    if token.access_token.is_empty() {
-        return Err("Empty access token".to_string());
-    }
-    if token.token_type.is_empty() {
-        return Err("Empty token type".to_string());
-    }
-    if token.expires_in == Nat::from(0u32) {
-        return Err("Invalid expiration time".to_string());
-    }
-    Ok(())
-=======
-    
     let profile: GoogleGmailProfile = serde_json::from_slice(&response.body)
         .map_err(|e| format!("Failed parsing Gmail profile JSON: {:?}", e))?;
-    
+
     Ok(profile)
->>>>>>> 0e070872c7c13b8e8c3bb89896cd766cafbaeeea
 }

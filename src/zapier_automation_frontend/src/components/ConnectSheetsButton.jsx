@@ -4,16 +4,16 @@ import { zapier_automation_backend } from "declarations/zapier_automation_backen
 export default function ConnectSheetsButton() {
   const handleConnectSheets = async () => {
     try {
-      const res = await zapier_automation_backend.get_google_auth_url();
+      const authUrl = await zapier_automation_backend.get_google_auth_url();
       
       // Log the URL before redirecting
-      console.log("🔗 Redirecting to:", res.url);
+      console.log("🔗 Redirecting to:", authUrl);
 
       // Redirect to Google OAuth
-      window.location.href = res.url;
-    } catch (e) {
-      console.error("Failed to start Google OAuth", e);
-      alert("Could not connect to Google Sheets. Check console.");
+      window.location.href = authUrl;
+    } 
+    catch (err) {
+    console.error("❌ Error getting Google Auth URL:", err);
     }
   };
 
