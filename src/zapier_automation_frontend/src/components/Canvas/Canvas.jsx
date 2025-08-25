@@ -15,6 +15,7 @@ const Canvas = () => {
   const [connectionCheckComplete, setConnectionCheckComplete] = useState(false);
   const location = useLocation();
 
+  
   // Add retry logic for backend connection checks
   const checkBackendConnection = async (retries = 3) => {
     for (let i = 0; i < retries; i++) {
